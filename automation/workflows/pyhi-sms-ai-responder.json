@@ -1,0 +1,53 @@
+{
+  "name": "PYHI — SMS AI Responder",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "pyhi-sms",
+        "options": {}
+      },
+      "id": "sms-webhook",
+      "name": "Twilio SMS Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "pyhi-sms-webhook"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3001/api/sms/webhook",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "From", "value": "={{ $json.body.From }}" },
+            { "name": "Body", "value": "={{ $json.body.Body }}" },
+            { "name": "To", "value": "={{ $json.body.To }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "forward-to-api",
+      "name": "Forward to PYHI API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "content": "### SMS AI Responder\nForwards inbound Twilio SMS to the PYHI automation API for AI-powered response generation.\n\n**Flow:**\n1. Twilio sends SMS to n8n webhook\n2. n8n forwards to localhost:3001/api/sms/webhook\n3. API classifies intent via OpenAI\n4. API generates brand-voice reply\n5. Reply sent back to user via Twilio"
+      },
+      "id": "note",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [220, 100]
+    }
+  ],
+  "connections": {
+    "Twilio SMS Webhook": { "main": [[{ "node": "Forward to PYHI API", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true },
+  "tags": [{ "name": "PYHI" }]
+}

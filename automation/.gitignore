@@ -1,0 +1,5 @@
+node_modules/
+.env
+pyhi.db
+pyhi.db-wal
+pyhi.db-shm

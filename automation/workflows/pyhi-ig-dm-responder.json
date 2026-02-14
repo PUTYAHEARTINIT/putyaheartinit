@@ -1,0 +1,50 @@
+{
+  "name": "PYHI — Instagram DM AI Responder",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "=POST",
+        "path": "pyhi-instagram",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "ig-webhook",
+      "name": "Instagram Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "pyhi-ig-webhook"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:3001/api/instagram/webhook",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.body) }}",
+        "options": {}
+      },
+      "id": "forward-to-api",
+      "name": "Forward to PYHI API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "content": "### Instagram DM AI Responder\nForwards inbound Instagram DMs (via Meta webhook) to the PYHI automation API.\n\n**Flow:**\n1. Meta sends DM event to n8n webhook\n2. n8n forwards to localhost:3001/api/instagram/webhook\n3. API classifies intent (pricing, collab, drop dates, etc.)\n4. API generates brand-voice reply via OpenAI\n5. Reply sent back via Meta Graph API\n\n**Setup Required:**\n- Meta Developer App with Messenger permissions\n- Instagram Business account connected to Facebook Page\n- Page Access Token in .env"
+      },
+      "id": "note",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [220, 80]
+    }
+  ],
+  "connections": {
+    "Instagram Webhook": { "main": [[{ "node": "Forward to PYHI API", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true },
+  "tags": [{ "name": "PYHI" }]
+}

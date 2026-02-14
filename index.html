@@ -1741,20 +1741,87 @@ document.getElementById('backTop').addEventListener('click',()=>{
 });
 
 /* ═══ FORM SUBMISSION ═══ */
-function handleSubmit(e,f){
+const AUTOMATION_API = 'http://localhost:3001';
+
+async function handleSubmit(e, f) {
   e.preventDefault();
-  const b=f.querySelector('button');
-  const origText=b.textContent;
-  b.textContent='\u2726 YOU\'RE IN';
-  b.style.background='#4ECDC4';
-  b.style.color='#0B1026';
-  f.querySelector('input').value='';
-  setTimeout(()=>{
-    b.textContent=origText;
-    b.style.background='';
-    b.style.color='';
-  },3000);
+  const b = f.querySelector('button');
+  const input = f.querySelector('input');
+  const email = input.value.trim();
+  const origText = b.textContent;
+
+  if (!email || !email.includes('@')) {
+    b.textContent = 'Enter a valid email';
+    b.style.background = '#ff4444';
+    b.style.color = '#fff';
+    setTimeout(() => { b.textContent = origText; b.style.background = ''; b.style.color = ''; }, 2000);
+    return;
+  }
+
+  // Show loading state
+  b.textContent = 'Joining...';
+  b.style.opacity = '0.7';
+  b.disabled = true;
+
+  try {
+    const res = await fetch(`${AUTOMATION_API}/api/subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, source: f.classList.contains('book-form') ? 'waitlist' : 'cta' }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      b.textContent = '\u2726 YOU\'RE IN';
+      b.style.background = '#4ECDC4';
+      b.style.color = '#0B1026';
+      b.style.opacity = '1';
+      input.value = '';
+    } else {
+      throw new Error(data.error || 'Failed');
+    }
+  } catch (err) {
+    // Graceful fallback — still show success UI so user isn't blocked
+    console.warn('Automation API unreachable, storing locally:', err.message);
+    b.textContent = '\u2726 YOU\'RE IN';
+    b.style.background = '#4ECDC4';
+    b.style.color = '#0B1026';
+    b.style.opacity = '1';
+    input.value = '';
+
+    // Queue for retry when API is available
+    try {
+      const q = JSON.parse(localStorage.getItem('pyhi_queue') || '[]');
+      q.push({ email, source: f.classList.contains('book-form') ? 'waitlist' : 'cta', ts: Date.now() });
+      localStorage.setItem('pyhi_queue', JSON.stringify(q));
+    } catch (_) {}
+  }
+
+  setTimeout(() => {
+    b.textContent = origText;
+    b.style.background = '';
+    b.style.color = '';
+    b.disabled = false;
+  }, 3000);
 }
+
+// Retry queued submissions when API comes online
+(async function retryQueue() {
+  try {
+    const q = JSON.parse(localStorage.getItem('pyhi_queue') || '[]');
+    if (!q.length) return;
+    const health = await fetch(`${AUTOMATION_API}/api/health`).then(r => r.ok);
+    if (!health) return;
+    for (const item of q) {
+      await fetch(`${AUTOMATION_API}/api/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item),
+      }).catch(() => {});
+    }
+    localStorage.removeItem('pyhi_queue');
+  } catch (_) {}
+})();
 
 /* ═══ MOBILE NAV ═══ */
 const navToggle=document.getElementById('navToggle');
