@@ -238,6 +238,24 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 .platform-link:hover{border-color:var(--white);color:var(--white);transform:translateY(-2px)}
 .platform-link .dot{width:6px;height:6px;border-radius:50%;background:var(--red)}
 
+/* ═══ MISSION ═══ */
+.mission-sec{padding:120px 0;background:var(--black2);border-top:1px solid rgba(255,255,255,0.04);position:relative}
+.mission-content{max-width:1000px;margin:0 auto}
+.mission-intro{text-align:center;margin-bottom:64px}
+.mission-lead{font-family:'Outfit',sans-serif;font-size:clamp(18px,2.5vw,28px);font-weight:400;line-height:1.6;color:var(--white);max-width:800px;margin:0 auto}
+.mission-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;margin-bottom:64px}
+.mission-block{padding:40px 32px;background:var(--black);border:1px solid rgba(255,255,255,0.04);transition:all 0.4s;position:relative;overflow:hidden}
+.mission-block::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--gold));transform:scaleX(0);transition:transform 0.4s}
+.mission-block:hover{border-color:rgba(255,255,255,0.1);transform:translateY(-4px)}
+.mission-block:hover::before{transform:scaleX(1)}
+.mission-block-icon{font-size:24px;color:var(--red);margin-bottom:20px;opacity:0.8}
+.mission-block-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--white);margin-bottom:16px}
+.mission-block-text{font-size:13px;font-weight:300;line-height:1.7;color:var(--cream2)}
+.mission-philosophy{text-align:center;padding:48px 0;border-top:1px solid rgba(255,255,255,0.04)}
+.mission-phil-text{font-size:15px;font-weight:300;line-height:1.8;color:var(--cream2);margin-bottom:20px;max-width:720px;margin-left:auto;margin-right:auto}
+.mission-phil-text span{color:var(--white);font-weight:500}
+.mission-closing{font-family:'Outfit',sans-serif;font-size:17px;font-weight:500;color:var(--white);margin-top:32px;line-height:1.7;max-width:680px;margin-left:auto;margin-right:auto}
+
 /* ═══ PRESS ═══ */
 .press{padding:80px 0;background:var(--black);border-top:1px solid rgba(255,255,255,0.04)}
 .press-logos{display:flex;align-items:center;justify-content:center;gap:48px;margin-top:48px;flex-wrap:wrap}
@@ -417,6 +435,8 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
   .prod-grid,.svc-grid,.voices-grid,.mp-grid{grid-template-columns:1fr}
   .prod-grid[style*="repeat(4"]{grid-template-columns:repeat(2,1fr)!important}
   .bu-grid,.sm-grid{grid-template-columns:1fr}
+  .mission-grid{grid-template-columns:1fr;gap:24px}
+  .mission-sec{padding:80px 0}
   .stats-grid{grid-template-columns:repeat(2,1fr)}
   .lb-grid{grid-template-columns:1fr;grid-template-rows:auto}
   .lb-cell{min-height:200px}
@@ -446,6 +466,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
+  <a href="#mission" onclick="closeMenu()">Mission</a>
   <a href="#products" onclick="closeMenu()">Shop</a>
   <a href="#services" onclick="closeMenu()">Services</a>
   <a href="#nil" onclick="closeMenu()">NIL</a>
@@ -459,6 +480,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 <nav id="mainNav">
   <a href="#" class="nav-brand">PUTYAHEARTINIT</a>
   <ul class="nav-links">
+    <li><a href="#mission">Mission</a></li>
     <li><a href="#products">Shop</a></li>
     <li><a href="#services">Services</a></li>
     <li><a href="#nil">NIL</a></li>
@@ -509,6 +531,47 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
     <span class="ticker-item">PUTYAHEARTINIT .</span>
   </div>
 </div>
+
+<!-- ═══ MISSION ═══ -->
+<section class="mission-sec" id="mission">
+  <div class="ctn">
+    <div class="rv">
+      <p class="sec-label">Our Mission</p>
+      <div class="sec-heading" style="margin-bottom:48px;">WHY WE EXIST</div>
+    </div>
+    <div class="mission-content">
+      <div class="mission-intro">
+        <p class="mission-lead">PUTYAHEARTINIT exists to inspire the world to live with passion, purpose, and fearless creativity — to approach life with intention and put your heart into everything you do.</p>
+      </div>
+
+      <div class="mission-grid">
+        <div class="mission-block">
+          <div class="mission-block-icon">◆</div>
+          <h3 class="mission-block-title">A Movement, Not A Brand</h3>
+          <p class="mission-block-text">More than a brand, we are a movement built on motivation, discipline, and authentic expression, encouraging individuals and creators to transform ideas into reality through commitment, vision, and execution.</p>
+        </div>
+
+        <div class="mission-block">
+          <div class="mission-block-icon">◆</div>
+          <h3 class="mission-block-title">Multidisciplinary Creative Firm</h3>
+          <p class="mission-block-text">We are not meant to be placed inside a single category or confined to one industry. PUTYAHEARTINIT is a space where fashion, music, film, design, culture, and innovation converge.</p>
+        </div>
+
+        <div class="mission-block">
+          <div class="mission-block-icon">◆</div>
+          <h3 class="mission-block-title">Breaking Creative Boundaries</h3>
+          <p class="mission-block-text">Our mission is to break creative boundaries and prove that imagination, when combined with strategy and taste, can accomplish any endeavor.</p>
+        </div>
+      </div>
+
+      <div class="mission-philosophy">
+        <p class="mission-phil-text">At our core, we believe creativity is a force that moves through people, and our role is to guide that energy from concept to completion with care, precision, and excellence.</p>
+        <p class="mission-phil-text">Every project is approached with <span>passion</span>. Every detail is considered with <span>aesthetic intention</span>. Every outcome reflects a commitment to going <span>beyond expectations</span>.</p>
+        <p class="mission-closing">PUTYAHEARTINIT stands for creating without limits, executing with purpose, and inspiring others to live boldly — to put their heart in it and watch what becomes possible.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ═══ FULL SHOP — ORGANIZED BY COLLECTION ═══ -->
 <section class="products" id="products">
