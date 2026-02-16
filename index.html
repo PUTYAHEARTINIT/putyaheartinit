@@ -1963,5 +1963,88 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
   wrap.style.msOverflowStyle='none';
 })();
 </script>
+
+<!-- SIZE SELECTOR MODAL -->
+<div id="sizeModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:10000;align-items:center;justify-content:center;">
+  <div style="background:var(--black2);border:1px solid rgba(255,255,255,0.1);padding:48px;max-width:500px;width:90%;position:relative;">
+    <button id="closeModal" style="position:absolute;top:16px;right:16px;background:none;border:none;color:var(--gray);font-size:24px;cursor:pointer;padding:8px;transition:color 0.3s;">&times;</button>
+    <h3 id="modalProductName" style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--white);margin-bottom:8px;"></h3>
+    <p id="modalProductPrice" style="font-size:18px;color:var(--gray);margin-bottom:32px;"></p>
+    <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-bottom:16px;">Select Size:</p>
+    <div id="sizeButtons" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;"></div>
+    <p style="font-size:10px;color:var(--gray2);margin-top:24px;text-align:center;">💰 $20 shipping • Free over $250</p>
+  </div>
+</div>
+
+<script src="stripe_products_data.js"></script>
+<script>
+// Size Selector System
+(function() {
+  const modal = document.getElementById('sizeModal');
+  const closeBtn = document.getElementById('closeModal');
+  const productName = document.getElementById('modalProductName');
+  const productPrice = document.getElementById('modalProductPrice');
+  const sizeButtons = document.getElementById('sizeButtons');
+
+  function closeModal() {
+    modal.style.display = 'none';
+  }
+
+  closeBtn.addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal();
+  });
+
+  function showSizeSelector(productBaseName) {
+    const product = STRIPE_PRODUCTS[productBaseName];
+    if (!product) {
+      console.error('Product not found:', productBaseName);
+      return;
+    }
+
+    productName.textContent = product.name;
+    productPrice.textContent = '$' + product.price.toFixed(0);
+    sizeButtons.innerHTML = '';
+
+    if (!product.sizes) {
+      window.location.href = product.link;
+      return;
+    }
+
+    ['S', 'M', 'L', 'XL', 'XXL'].forEach(size => {
+      const link = product.sizes[size];
+      if (link) {
+        const btn = document.createElement('a');
+        btn.href = link;
+        btn.textContent = size;
+        btn.style.cssText = `display:flex;align-items:center;justify-content:center;padding:16px 8px;background:var(--black);border:1px solid rgba(255,255,255,0.1);color:var(--cream);font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;text-decoration:none;transition:all 0.3s;cursor:pointer;`;
+        btn.onmouseenter = () => {
+          btn.style.background = 'var(--white)';
+          btn.style.color = 'var(--black)';
+        };
+        btn.onmouseleave = () => {
+          btn.style.background = 'var(--black)';
+          btn.style.color = 'var(--cream)';
+        };
+        sizeButtons.appendChild(btn);
+      }
+    });
+
+    modal.style.display = 'flex';
+  }
+
+  document.querySelectorAll('.prod-card').forEach(card => {
+    card.removeAttribute('href');
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', (e) => {
+      e.preventDefault();
+      const productNameEl = card.querySelector('.prod-name');
+      if (productNameEl) {
+        showSizeSelector(productNameEl.textContent.trim());
+      }
+    });
+  });
+})();
+</script>
 </body>
 </html>
