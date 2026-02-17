@@ -3,3 +3,4 @@ node_modules/
 pyhi.db
 pyhi.db-wal
 pyhi.db-shm
+.vercel

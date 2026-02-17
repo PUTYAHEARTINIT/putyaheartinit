@@ -44,6 +44,7 @@ function getTwilioClient() {
 
 const FROM_EMAIL = process.env.FROM_EMAIL || 'PUTYAHEARTINIT <onboarding@resend.dev>'
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'sweetheartsatl.agency@gmail.com'
+const ADMIN_PHONE = process.env.ADMIN_PHONE || null
 
 // ─── Helper: Send Email ───
 async function sendEmail(to, subject, html) {
@@ -63,12 +64,18 @@ async function sendSms(to, body) {
     console.log(`[SMS-MOCK] To: ${to} | Body: ${body}`)
     return { sid: 'mock-' + Date.now() }
   }
-  const message = await client.messages.create({
-    body,
-    from: process.env.TWILIO_PHONE_NUMBER,
-    to,
-  })
-  return message
+  try {
+    const message = await client.messages.create({
+      body,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to,
+    })
+    console.log(`[SMS-SENT] To: ${to} | SID: ${message.sid}`)
+    return message
+  } catch (error) {
+    console.error(`[SMS-ERROR] To: ${to} | Error: ${error.message}`)
+    throw error
+  }
 }
 
 // ════════════════════════════════════════
@@ -135,14 +142,22 @@ app.post('/api/subscribe', async (req, res) => {
     enqueueDrip.run({ contact_id: contact.id, template: 'brand_story', send_at: day3 })
     enqueueDrip.run({ contact_id: contact.id, template: 'exclusive_offer', send_at: day7 })
 
-    // Notify admin
+    // Notify admin via email
     await sendEmail(
       ADMIN_EMAIL,
       `New PYHI Subscriber: ${email}`,
       `<p>New subscriber: <strong>${email}</strong>${name ? ` (${name})` : ''}</p><p>Source: ${source || 'website'}</p>`
     )
 
-    console.log(`[SUBSCRIBE] ${email} — welcome sent, drip queued`)
+    // Notify admin via SMS
+    if (ADMIN_PHONE) {
+      await sendSms(
+        ADMIN_PHONE,
+        `🎯 New PUTYAHEARTINIT subscriber!\n${email}${name ? ` (${name})` : ''}\nSource: ${source || 'website'}`
+      )
+    }
+
+    console.log(`[SUBSCRIBE] ${email} — welcome sent, drip queued, admin notified`)
     res.json({ success: true, message: "You're in! Check your inbox." })
   } catch (error) {
     console.error('[SUBSCRIBE ERROR]', error)
@@ -442,17 +457,85 @@ app.post('/api/email/broadcast', async (req, res) => {
 })
 
 // ════════════════════════════════════════
-// START SERVER
+// STRIPE WEBHOOKS
 // ════════════════════════════════════════
 
-app.listen(PORT, () => {
-  console.log(`
+/**
+ * POST /api/stripe/webhook — Stripe payment events
+ * Handles checkout.session.completed, payment_intent.succeeded, etc.
+ */
+app.post('/api/stripe/webhook', express.raw({type: 'application/json'}), async (req, res) => {
+  try {
+    const event = req.body
+
+    // Handle the event
+    if (event.type === 'checkout.session.completed' || event.type === 'payment_intent.succeeded') {
+      const session = event.data.object
+
+      const customerEmail = session.customer_details?.email || session.receipt_email
+      const customerName = session.customer_details?.name
+      const amount = (session.amount_total || session.amount) / 100
+      const productName = session.metadata?.product_name || 'Product'
+
+      // Notify admin via email
+      await sendEmail(
+        ADMIN_EMAIL,
+        `💰 New PUTYAHEARTINIT Purchase!`,
+        `<h2>New Order Received</h2>
+         <p><strong>Customer:</strong> ${customerName || 'N/A'} (${customerEmail})</p>
+         <p><strong>Amount:</strong> $${amount.toFixed(2)}</p>
+         <p><strong>Product:</strong> ${productName}</p>
+         <p><strong>Payment ID:</strong> ${session.id}</p>`
+      )
+
+      // Notify admin via SMS
+      if (ADMIN_PHONE) {
+        await sendSms(
+          ADMIN_PHONE,
+          `💰 NEW SALE!\n$${amount.toFixed(2)} - ${productName}\nCustomer: ${customerEmail}`
+        )
+      }
+
+      // Send thank you email to customer
+      if (customerEmail) {
+        await sendEmail(
+          customerEmail,
+          'Thank You for Your PUTYAHEARTINIT Order! 🖤',
+          `<div style="background:#0a0a0a;color:#F0EDE6;font-family:Arial,sans-serif;padding:40px;">
+            <h1 style="font-family:'Bebas Neue',sans-serif;letter-spacing:4px;color:#fff;">THANK YOU</h1>
+            <p>Hey ${customerName || 'there'},</p>
+            <p>Your order has been received and is being processed. We'll send you tracking info soon.</p>
+            <p><strong>Order Total:</strong> $${amount.toFixed(2)}</p>
+            <p style="margin-top:40px;">Put ya heart in it,<br><strong>PUTYAHEARTINIT Team</strong></p>
+          </div>`
+        )
+      }
+
+      console.log(`[STRIPE] Purchase: ${customerEmail} - $${amount}`)
+    }
+
+    res.json({received: true})
+  } catch (error) {
+    console.error('[STRIPE WEBHOOK ERROR]', error)
+    res.status(500).json({error: 'Webhook error'})
+  }
+})
+
+// ════════════════════════════════════════
+// START SERVER (local only)
+// ════════════════════════════════════════
+
+// Only start server if not on Vercel
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`
 ╔══════════════════════════════════════════╗
 ║   PUTYAHEARTINIT AUTOMATION ENGINE       ║
 ║   Running on http://localhost:${PORT}        ║
 ║                                          ║
 ║   Endpoints:                             ║
 ║   POST /api/subscribe     (forms)        ║
+║   POST /api/stripe/webhook (purchases)   ║
 ║   POST /api/sms/webhook   (Twilio in)    ║
 ║   POST /api/sms/send      (SMS out)      ║
 ║   POST /api/sms/broadcast (SMS blast)    ║
@@ -462,8 +545,15 @@ app.listen(PORT, () => {
 ║   GET  /api/stats         (dashboard)    ║
 ║   GET  /api/health        (status)       ║
 ╚══════════════════════════════════════════╝
-  `)
+    `)
 
-  // Initial drip check
+    // Initial drip check
+    processDripQueue()
+  })
+} else {
+  // On Vercel, just run drip queue check once
   processDripQueue()
-})
+}
+
+// Export for Vercel
+export default app;
