@@ -235,8 +235,10 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 .sm-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
 .sm-card{background:var(--black);border:1px solid rgba(255,255,255,0.04);overflow:hidden;transition:all 0.4s;cursor:pointer}
 .sm-card:hover{border-color:rgba(230,57,70,0.3);transform:translateY(-3px)}
-.sm-thumb{aspect-ratio:16/9;background:var(--black3);display:flex;align-items:center;justify-content:center;position:relative}
-.sm-thumb::after{content:'\25B6';position:absolute;font-size:20px;color:var(--white);width:40px;height:40px;background:rgba(230,57,70,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s}
+.sm-thumb{aspect-ratio:16/9;background:var(--black3);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.sm-thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform 0.4s ease}
+.sm-card:hover .sm-thumb img{transform:scale(1.04)}
+.sm-thumb::after{content:'\25B6';position:absolute;font-size:20px;color:var(--white);width:40px;height:40px;background:rgba(230,57,70,0.9);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;z-index:2}
 .sm-card:hover .sm-thumb::after{opacity:1}
 .sm-thumb-text{font-family:'Bebas Neue',sans-serif;font-size:18px;color:rgba(255,255,255,0.06);letter-spacing:4px}
 .sm-card-info{padding:14px}
@@ -480,9 +482,23 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
   transition: min-height 0.3s ease;
 }
 .music-bar.open {
-  min-height: 100px;
+  min-height: 108px;
   cursor: default;
 }
+.music-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #555;
+  font-size: 16px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 6px;
+  transition: color 0.2s;
+}
+.music-close:hover { color: #E63946; }
 .music-prompt {
   display: flex;
   align-items: center;
@@ -2159,7 +2175,7 @@ document.addEventListener('DOMContentLoaded', function() {
     stevie: 'spotify:artist:2AircrJUqm6rLTZXz5KfO2'
   };
   let currentArtist = 'pyhi';
-  let opened = false;
+  let isOpen = false;
 
   function buildIframe(uri) {
     return '<iframe src="https://open.spotify.com/embed/artist/' + uri.split(':')[2] +
@@ -2169,13 +2185,22 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function openPlayer() {
-    if (opened) return;
-    opened = true;
+    isOpen = true;
     document.getElementById('musicPrompt').style.display = 'none';
     const embed = document.getElementById('spotifyEmbed');
     embed.style.display = 'flex';
     document.getElementById('musicBar').classList.add('open');
-    document.getElementById('iframeWrap').innerHTML = buildIframe(ARTISTS[currentArtist]);
+    if (!document.getElementById('iframeWrap').innerHTML) {
+      document.getElementById('iframeWrap').innerHTML = buildIframe(ARTISTS[currentArtist]);
+    }
+  }
+
+  function closePlayer(e) {
+    e.stopPropagation();
+    isOpen = false;
+    document.getElementById('musicPrompt').style.display = 'flex';
+    document.getElementById('spotifyEmbed').style.display = 'none';
+    document.getElementById('musicBar').classList.remove('open');
   }
 
   window.switchArtist = function(artist, e) {
@@ -2187,7 +2212,21 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('iframeWrap').innerHTML = buildIframe(ARTISTS[artist]);
   };
 
-  document.getElementById('musicBar').addEventListener('click', openPlayer);
+  document.getElementById('musicBar').addEventListener('click', function() {
+    if (!isOpen) openPlayer();
+  });
+
+  document.getElementById('musicClose').addEventListener('click', closePlayer);
+
+  // ===== YOUTUBE THUMBNAILS =====
+  document.querySelectorAll('.sm-card').forEach(function(card) {
+    var href = card.getAttribute('href') || '';
+    var m = href.match(/(?:[?&]v=|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    if (!m) return;
+    var thumb = card.querySelector('.sm-thumb');
+    if (!thumb) return;
+    thumb.innerHTML = '<img src="https://img.youtube.com/vi/' + m[1] + '/hqdefault.jpg" alt="" loading="lazy">';
+  });
 });
 </script>
 
@@ -2200,6 +2239,7 @@ document.addEventListener('DOMContentLoaded', function() {
     🔇 Tap to turn up the heat 🔥
   </div>
   <div class="spotify-embed" id="spotifyEmbed">
+    <button class="music-close" id="musicClose" aria-label="Close player">✕</button>
     <div class="artist-toggle">
       <button class="active" id="btnPYHI" onclick="switchArtist('pyhi', event)">PYHI</button>
       <button id="btnStevie" onclick="switchArtist('stevie', event)">Stevie Harts</button>
