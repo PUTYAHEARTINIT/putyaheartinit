@@ -97,6 +97,9 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 
 /* ═══ HERO ═══ */
 .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;position:relative;overflow:hidden;padding:120px 0 80px;background:var(--black)}
+.hero-video-wrap{position:absolute;inset:0;z-index:0}
+.hero-video{width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(0.35) saturate(0.7)}
+.hero-video-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,0.3) 0%,rgba(10,10,10,0.55) 50%,rgba(10,10,10,0.95) 100%)}
 .hero-grain{position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");opacity:0.5;pointer-events:none;z-index:1}
 .hero-particles{position:absolute;inset:0;pointer-events:none;z-index:1}
 .particle{position:absolute;width:2px;height:2px;background:rgba(255,255,255,0.15);border-radius:50%;animation:particleDrift 8s infinite ease-in-out}
@@ -647,6 +650,12 @@ body { padding-bottom: 72px; }
 
 <!-- ═══ HERO ═══ -->
 <section class="hero">
+ <div class="hero-video-wrap">
+   <video class="hero-video" autoplay muted loop playsinline>
+     <source src="images/hero-video.mp4" type="video/mp4">
+   </video>
+   <div class="hero-video-overlay"></div>
+ </div>
  <div class="hero-grain"></div>
  <div class="hero-particles" id="heroParticles"></div>
  <div class="ctn">
@@ -745,35 +754,35 @@ body { padding-bottom: 72px; }
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-varsity-navy-m.png" alt="Varsity Set Navy"></div>
- <div class="prod-info"><div class="prod-name">Varsity Set Navy</div><div class="prod-price">Men's</div></div>
+ <div class="prod-info"><div class="prod-name">Varsity Set Navy</div><div class="prod-price">$300 · Men's</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-varsity-cream-m.png" alt="Varsity Set Cream"></div>
- <div class="prod-info"><div class="prod-name">Varsity Set Cream</div><div class="prod-price">Men's</div></div>
+ <div class="prod-info"><div class="prod-name">Varsity Set Cream</div><div class="prod-price">$300 · Men's</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-varsity-burgundy-m.png" alt="Varsity Set Burgundy"></div>
- <div class="prod-info"><div class="prod-name">Varsity Set Burgundy</div><div class="prod-price">Men's</div></div>
+ <div class="prod-info"><div class="prod-name">Varsity Set Burgundy</div><div class="prod-price">$300 · Men's</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-varsity-green-m.png" alt="Varsity Set Forest Green"></div>
- <div class="prod-info"><div class="prod-name">Varsity Set Green</div><div class="prod-price">Men's</div></div>
+ <div class="prod-info"><div class="prod-name">Varsity Set Green</div><div class="prod-price">$300 · Men's</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-varsity-gray-m.png" alt="Varsity Set Gray"></div>
- <div class="prod-info"><div class="prod-name">Varsity Set Gray</div><div class="prod-price">Men's</div></div>
+ <div class="prod-info"><div class="prod-name">Varsity Set Gray</div><div class="prod-price">$300 · Men's</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-varsity-cream-w.png" alt="Varsity Set Cream"></div>
- <div class="prod-info"><div class="prod-name">Varsity Set Cream</div><div class="prod-price">Women's</div></div>
+ <div class="prod-info"><div class="prod-name">Varsity Set Cream</div><div class="prod-price">$300 · Women's</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-varsity-navy-w.png" alt="Varsity Set Navy"></div>
- <div class="prod-info"><div class="prod-name">Varsity Set Navy</div><div class="prod-price">Women's</div></div>
+ <div class="prod-info"><div class="prod-name">Varsity Set Navy</div><div class="prod-price">$300 · Women's</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-varsity-burgundy-w.png" alt="Varsity Set Burgundy"></div>
- <div class="prod-info"><div class="prod-name">Varsity Set Burgundy</div><div class="prod-price">Women's</div></div>
+ <div class="prod-info"><div class="prod-name">Varsity Set Burgundy</div><div class="prod-price">$300 · Women's</div></div>
  </a>
  </div>
 
@@ -784,35 +793,35 @@ body { padding-bottom: 72px; }
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-hoodie-black.png" alt="Varsity Hoodie Black"></div>
- <div class="prod-info"><div class="prod-name">Varsity Hoodie Black</div></div>
+ <div class="prod-info"><div class="prod-name">Varsity Hoodie Black</div><div class="prod-price">$160</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-hoodie-cream.png" alt="Varsity Hoodie Cream"></div>
- <div class="prod-info"><div class="prod-name">Varsity Hoodie Cream</div></div>
+ <div class="prod-info"><div class="prod-name">Varsity Hoodie Cream</div><div class="prod-price">$160</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-hoodie-gray.png" alt="Varsity Hoodie Gray"></div>
- <div class="prod-info"><div class="prod-name">Varsity Hoodie Gray</div></div>
+ <div class="prod-info"><div class="prod-name">Varsity Hoodie Gray</div><div class="prod-price">$160</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-pants-black.png" alt="Flare Pants Black"></div>
- <div class="prod-info"><div class="prod-name">Flare Pants Black</div></div>
+ <div class="prod-info"><div class="prod-name">Flare Pants Black</div><div class="prod-price">$140</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-pants-burgundy.png" alt="Flare Pants Burgundy"></div>
- <div class="prod-info"><div class="prod-name">Flare Pants Burgundy</div></div>
+ <div class="prod-info"><div class="prod-name">Flare Pants Burgundy</div><div class="prod-price">$140</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-pants-green.png" alt="Flare Pants Green"></div>
- <div class="prod-info"><div class="prod-name">Flare Pants Green</div></div>
+ <div class="prod-info"><div class="prod-name">Flare Pants Green</div><div class="prod-price">$140</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-pants-gray-w.png" alt="Flare Pants Gray"></div>
- <div class="prod-info"><div class="prod-name">Flare Pants Gray</div><div class="prod-price">Women's</div></div>
+ <div class="prod-info"><div class="prod-name">Flare Pants Gray</div><div class="prod-price">$140 · Women's</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-pants-sage-w.png" alt="Flare Pants Sage"></div>
- <div class="prod-info"><div class="prod-name">Flare Pants Sage</div><div class="prod-price">Women's</div></div>
+ <div class="prod-info"><div class="prod-name">Flare Pants Sage</div><div class="prod-price">$140 · Women's</div></div>
  </a>
  </div>
 
@@ -826,23 +835,23 @@ body { padding-bottom: 72px; }
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-camo-green.png" alt="Heart Camo Green"></div>
- <div class="prod-info"><div class="prod-name">Heart Camo Green</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Camo Green</div><div class="prod-price">$350</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-camo-red.png" alt="Heart Camo Red"></div>
- <div class="prod-info"><div class="prod-name">Heart Camo Red</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Camo Red</div><div class="prod-price">$350</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-camo-yellow.png" alt="Heart Camo Yellow"></div>
- <div class="prod-info"><div class="prod-name">Heart Camo Yellow</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Camo Yellow</div><div class="prod-price">$350</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-camo-black.png" alt="Heart Camo Black"></div>
- <div class="prod-info"><div class="prod-name">Heart Camo Black</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Camo Black</div><div class="prod-price">$350</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-camo-pink.png" alt="Heart Camo Pink"></div>
- <div class="prod-info"><div class="prod-name">Heart Camo Pink</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Camo Pink</div><div class="prod-price">$350</div></div>
  </a>
  </div>
 
@@ -853,35 +862,35 @@ body { padding-bottom: 72px; }
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-denim-jacket.png" alt="Heart Denim Jacket"></div>
- <div class="prod-info"><div class="prod-name">Heart Denim Jacket</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Denim Jacket</div><div class="prod-price">$500</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-denim-hooded-jacket.png" alt="Heart Denim Hooded Jacket"></div>
- <div class="prod-info"><div class="prod-name">Heart Denim Hooded Jacket</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Denim Hooded Jacket</div><div class="prod-price">$500</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-denim-hoodie.png" alt="Heart Denim Hoodie"></div>
- <div class="prod-info"><div class="prod-name">Heart Denim Hoodie</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Denim Hoodie</div><div class="prod-price">$500</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-denim-jeans.png" alt="Heart Patchwork Jeans"></div>
- <div class="prod-info"><div class="prod-name">Heart Patchwork Jeans</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Patchwork Jeans</div><div class="prod-price">$500</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-denim-set.png" alt="Heart Denim Full Set"></div>
- <div class="prod-info"><div class="prod-name">Heart Denim Full Set</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Denim Full Set</div><div class="prod-price">$800</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-hearts-purple.png" alt="Hearts Hoodie Purple"></div>
- <div class="prod-info"><div class="prod-name">Hearts Hoodie Purple</div></div>
+ <div class="prod-info"><div class="prod-name">Hearts Hoodie Purple</div><div class="prod-price">$160</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-hearts-rust.png" alt="Hearts Hoodie Rust"></div>
- <div class="prod-info"><div class="prod-name">Hearts Hoodie Rust</div></div>
+ <div class="prod-info"><div class="prod-name">Hearts Hoodie Rust</div><div class="prod-price">$160</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-hearts-black.png" alt="Hearts Hoodie Black"></div>
- <div class="prod-info"><div class="prod-name">Hearts Hoodie Black</div></div>
+ <div class="prod-info"><div class="prod-name">Hearts Hoodie Black</div><div class="prod-price">$160</div></div>
  </a>
  </div>
 
@@ -892,27 +901,27 @@ body { padding-bottom: 72px; }
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-creature-cream.png" alt="Creature Hoodie Cream"></div>
- <div class="prod-info"><div class="prod-name">Creature Hoodie Cream</div></div>
+ <div class="prod-info"><div class="prod-name">Creature Hoodie Cream</div><div class="prod-price">$160</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-creature-blue.png" alt="Creature Hoodie Blue"></div>
- <div class="prod-info"><div class="prod-name">Creature Hoodie Blue</div></div>
+ <div class="prod-info"><div class="prod-name">Creature Hoodie Blue</div><div class="prod-price">$160</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-char-jeans-family.png" alt="Flaming Heart Family Jeans"></div>
- <div class="prod-info"><div class="prod-name">Flaming Heart Family Jeans</div></div>
+ <div class="prod-info"><div class="prod-name">Flaming Heart Family Jeans</div><div class="prod-price">$500</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-char-jeans-dark.png" alt="Character Patch Jeans"></div>
- <div class="prod-info"><div class="prod-name">Character Patch Jeans</div></div>
+ <div class="prod-info"><div class="prod-name">Character Patch Jeans</div><div class="prod-price">$500</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-char-jeans-wing.png" alt="Wing Patch Jeans"></div>
- <div class="prod-info"><div class="prod-name">Wing Patch Jeans</div></div>
+ <div class="prod-info"><div class="prod-name">Wing Patch Jeans</div><div class="prod-price">$500</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-char-jeans-bigfoot.png" alt="Bigfoot Character Jeans"></div>
- <div class="prod-info"><div class="prod-name">Bigfoot Character Jeans</div></div>
+ <div class="prod-info"><div class="prod-name">Bigfoot Character Jeans</div><div class="prod-price">$500</div></div>
  </a>
  </div>
 
@@ -923,27 +932,27 @@ body { padding-bottom: 72px; }
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-astro-tee.png" alt="Astro Heart Tee"></div>
- <div class="prod-info"><div class="prod-name">Astro Heart Tee</div></div>
+ <div class="prod-info"><div class="prod-name">Astro Heart Tee</div><div class="prod-price">$80</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-throne-ls.png" alt="Heart Throne Long Sleeve"></div>
- <div class="prod-info"><div class="prod-name">Heart Throne Long Sleeve</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Throne Long Sleeve</div><div class="prod-price">$100</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-desire-black.png" alt="DESIRE Hoodie Black"></div>
- <div class="prod-info"><div class="prod-name">DESIRE Hoodie Black</div></div>
+ <div class="prod-info"><div class="prod-name">DESIRE Hoodie Black</div><div class="prod-price">$160</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-desire-blue.png" alt="DESIRE Hoodie Blue"></div>
- <div class="prod-info"><div class="prod-name">DESIRE Hoodie Blue</div></div>
+ <div class="prod-info"><div class="prod-name">DESIRE Hoodie Blue</div><div class="prod-price">$160</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-mascot-zip-charcoal.png" alt="Mascot Zip Hoodie"></div>
- <div class="prod-info"><div class="prod-name">Mascot Zip Hoodie</div></div>
+ <div class="prod-info"><div class="prod-name">Mascot Zip Hoodie</div><div class="prod-price">$200</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-mascot-zip-lined.png" alt="Mascot Lined Zip Hoodie"></div>
- <div class="prod-info"><div class="prod-name">Mascot Lined Zip Hoodie</div></div>
+ <div class="prod-info"><div class="prod-name">Mascot Lined Zip Hoodie</div><div class="prod-price">$200</div></div>
  </a>
  </div>
 
@@ -954,27 +963,27 @@ body { padding-bottom: 72px; }
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-kids-gray.png" alt="Kids Mascot Hoodie Gray"></div>
- <div class="prod-info"><div class="prod-name">Kids Mascot Hoodie Gray</div></div>
+ <div class="prod-info"><div class="prod-name">Kids Mascot Hoodie Gray</div><div class="prod-price">$160</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-kids-black.png" alt="Kids Mascot Hoodie Black"></div>
- <div class="prod-info"><div class="prod-name">Kids Mascot Hoodie Washed Black</div></div>
+ <div class="prod-info"><div class="prod-name">Kids Mascot Hoodie Washed Black</div><div class="prod-price">$160</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-plush.png" alt="Heart Plush Figure"></div>
- <div class="prod-info"><div class="prod-name">Heart Plush Figure</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Plush Figure</div><div class="prod-price">$60</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-plush-4pack.png" alt="Heart Plush 4-Pack"></div>
- <div class="prod-info"><div class="prod-name">Heart Plush 4 Pack</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Plush 4 Pack</div><div class="prod-price">$140</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-keychain.png" alt="Heart Keychain"></div>
- <div class="prod-info"><div class="prod-name">Heart Keychain</div></div>
+ <div class="prod-info"><div class="prod-name">Heart Keychain</div><div class="prod-price">$40</div></div>
  </a>
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
  <div class="prod-img"><img src="images/merch-keychain-tee.png" alt="Keychain Display Tee"></div>
- <div class="prod-info"><div class="prod-name">Keychain Display Tee</div></div>
+ <div class="prod-info"><div class="prod-name">Keychain Display Tee</div><div class="prod-price">$80</div></div>
  </a>
  </div>
 
@@ -1710,7 +1719,7 @@ body { padding-bottom: 72px; }
  <div class="book-torus"><div class="bk-ring"></div><div class="bk-ring"></div><div class="bk-ring"></div></div>
  <div class="ctn">
  <div class="rv">
- <p class="book-label">The Book</p>
+ <p class="book-label">The Book · <span style="color:var(--gold2);font-style:italic;letter-spacing:1px;">In Development</span></p>
  <h2 class="book-title">Your Heart Isn't Just an Organ <br>It's an <em>Operating System</em>.</h2>
  </div>
  <div class="book-layout">
@@ -1847,7 +1856,7 @@ body { padding-bottom: 72px; }
        <div class="vision-card-icon">📱</div>
        <div class="vision-card-name">THE APP</div>
        <div class="vision-card-desc">A full cultural platform in your pocket. Shop drops, track your community journey, access exclusive content, and connect with a global movement — all in one place.</div>
-       <div class="vision-card-eta">2025 — In Development</div>
+       <div class="vision-card-eta">2027 — In Development</div>
      </div>
 
      <div class="vision-card rv">
@@ -1856,7 +1865,7 @@ body { padding-bottom: 72px; }
        <div class="vision-card-icon">🎙</div>
        <div class="vision-card-name">PODCASTS</div>
        <div class="vision-card-desc">Raw conversations about building from nothing. Music, business, culture, mental fortitude, and what it really means to put your whole heart into your life's work.</div>
-       <div class="vision-card-eta">2025 — Pre-Production</div>
+       <div class="vision-card-eta">2027 — Pre-Production</div>
      </div>
 
      <div class="vision-card rv">
@@ -1865,7 +1874,7 @@ body { padding-bottom: 72px; }
        <div class="vision-card-icon">🎬</div>
        <div class="vision-card-name">DOCUSERIES</div>
        <div class="vision-card-desc">Follow the story behind the movement. The sacrifices. The breakthroughs. The people. An unfiltered cinematic series documenting the rise of PUTYAHEARTINIT.</div>
-       <div class="vision-card-eta">2025 — In Development</div>
+       <div class="vision-card-eta">2027–28 — In Development</div>
      </div>
 
      <div class="vision-card rv">
@@ -1874,7 +1883,7 @@ body { padding-bottom: 72px; }
        <div class="vision-card-icon">🔥</div>
        <div class="vision-card-name">EVENTS</div>
        <div class="vision-card-desc">Live experiences. Pop-ups. Concerts. Community activations. From intimate brand drops to full-scale cultural events — bringing the movement off the screen and into real life.</div>
-       <div class="vision-card-eta">2025 — Activating</div>
+       <div class="vision-card-eta">2027–28 — Activating</div>
      </div>
 
    </div>
