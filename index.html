@@ -102,7 +102,10 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 .particle{position:absolute;width:2px;height:2px;background:rgba(255,255,255,0.15);border-radius:50%;animation:particleDrift 8s infinite ease-in-out}
 @keyframes particleDrift{0%,100%{transform:translateY(0) translateX(0);opacity:0}20%{opacity:1}80%{opacity:1}50%{transform:translateY(-60px) translateX(20px)}}
 .hero-logo{width:clamp(280px,40vw,480px);margin:0 auto 40px;opacity:0;animation:fadeIn 1s ease 0.3s forwards;filter:drop-shadow(0 0 40px rgba(255,255,255,0.03))}
-.hero-tagline{font-family:'Outfit',sans-serif;font-size:clamp(12px,1.5vw,16px);font-weight:300;letter-spacing:6px;text-transform:uppercase;color:var(--gray);margin-bottom:48px;opacity:0;animation:fadeIn 1s ease 0.6s forwards;min-height:1.5em}
+.hero-tagline{font-family:'Outfit',sans-serif;font-size:clamp(12px,1.5vw,16px);font-weight:300;letter-spacing:6px;text-transform:uppercase;color:var(--gray);margin-bottom:32px;opacity:0;animation:fadeIn 1s ease 0.6s forwards;min-height:1.5em}
+.hero-flagship{margin-bottom:48px;opacity:0;animation:fadeIn 1s ease 0.75s forwards;line-height:1}
+.hf-prefix{display:block;font-family:'Bebas Neue',sans-serif;font-size:clamp(18px,2.5vw,28px);letter-spacing:10px;color:var(--gray);margin-bottom:8px}
+.hf-name{display:block;font-family:'Bebas Neue',sans-serif;font-size:clamp(48px,9vw,120px);letter-spacing:6px;color:var(--white);line-height:0.9;text-shadow:0 0 80px rgba(230,57,70,0.25)}
 .hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;opacity:0;animation:fadeIn 1s ease 0.9s forwards}
 
 /* Buttons with ripple & magnetic */
@@ -342,6 +345,30 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 .drop-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--white);margin-bottom:4px}
 .drop-desc{font-size:13px;font-weight:300;color:var(--gray);line-height:1.7}
 
+/* ═══ FUTURE VISION ROADMAP ═══ */
+.vision-sec{padding:140px 0;background:var(--black);border-top:1px solid rgba(255,255,255,0.04);position:relative;overflow:hidden}
+.vision-sec::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(230,57,70,0.04) 0%,transparent 70%);pointer-events:none}
+.vision-intro{text-align:center;margin-bottom:80px}
+.vision-eyebrow{font-size:9px;font-weight:600;letter-spacing:5px;text-transform:uppercase;color:var(--red);margin-bottom:20px}
+.vision-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,7vw,96px);letter-spacing:4px;color:var(--white);line-height:0.9;margin-bottom:24px}
+.vision-title .ghost{-webkit-text-stroke:1px rgba(255,255,255,0.15);color:transparent}
+.vision-sub{font-size:14px;font-weight:300;color:var(--gray);max-width:440px;margin:0 auto;line-height:1.8;letter-spacing:0.5px}
+.vision-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:80px}
+.vision-card{background:var(--black2);border:1px solid rgba(255,255,255,0.04);padding:48px 32px;position:relative;overflow:hidden;transition:border-color 0.4s,background 0.4s;cursor:default}
+.vision-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform 0.5s cubic-bezier(0.22,1,0.36,1)}
+.vision-card:hover{border-color:rgba(255,255,255,0.1);background:var(--black3)}
+.vision-card:hover::before{transform:scaleX(1)}
+.vision-card-num{font-family:'Bebas Neue',sans-serif;font-size:72px;color:rgba(255,255,255,0.03);line-height:1;position:absolute;top:20px;right:24px;letter-spacing:2px;user-select:none}
+.vision-card-status{font-size:8px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--red);margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.vision-card-status::before{content:'';width:16px;height:1px;background:var(--red);display:inline-block}
+.vision-card-icon{font-size:28px;margin-bottom:20px;opacity:0.6}
+.vision-card-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--white);margin-bottom:12px;line-height:1}
+.vision-card-desc{font-size:12px;font-weight:300;color:var(--gray);line-height:1.8}
+.vision-card-eta{margin-top:24px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.04);font-size:9px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2)}
+.vision-cta{text-align:center}
+.vision-cta p{font-size:12px;font-weight:300;color:var(--gray);letter-spacing:3px;text-transform:uppercase;margin-bottom:6px}
+.vision-cta-word{font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,4vw,48px);letter-spacing:6px;color:var(--white);opacity:0.08}
+
 /* ═══ MANIFESTO ═══ */
 .manifesto{padding:160px 0;text-align:center;background:var(--black);position:relative}
 .manifesto-txt{font-family:'Outfit',sans-serif;font-size:clamp(22px,3vw,40px);font-weight:300;color:var(--cream);line-height:1.7;max-width:720px;margin:0 auto}
@@ -429,6 +456,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
 
 /* ═══ RESPONSIVE ═══ */
 @media(max-width:1024px){
+  .vision-grid{grid-template-columns:repeat(2,1fr)}
   .book-layout,.nil-layout,.about-layout{grid-template-columns:1fr;gap:40px}
   .prod-grid,.svc-grid,.voices-grid,.mp-grid{grid-template-columns:repeat(2,1fr)}
     .prod-grid[style*="repeat(4"]{grid-template-columns:repeat(2,1fr)!important}
@@ -461,6 +489,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(-
   .ft-cols{flex-direction:column;gap:20px}
   .ft-bot{flex-direction:column;gap:8px}
   .platform-links{justify-content:flex-start}
+  .vision-grid{grid-template-columns:1fr}
   .movement-text{font-size:clamp(28px,8vw,48px)}
   .cursor-glow{display:none}
 }
@@ -590,9 +619,10 @@ body { padding-bottom: 72px; }
 <div class="mobile-menu" id="mobileMenu">
  <a href="#mission" onclick="closeMenu()">Mission</a>
  <a href="#products" onclick="closeMenu()">Shop</a>
- <a href="#services" onclick="closeMenu()">Services</a>
+ <a href="#services" onclick="closeMenu()">Studio</a>
  <a href="#nil" onclick="closeMenu()">NIL</a>
  <a href="#music" onclick="closeMenu()">Music</a>
+ <a href="#vision" onclick="closeMenu()">Vision</a>
  <a href="#book" onclick="closeMenu()">The Book</a>
  <a href="#about" onclick="closeMenu()">About</a>
  <a href="#join" onclick="closeMenu()">Join</a>
@@ -604,9 +634,10 @@ body { padding-bottom: 72px; }
  <ul class="nav-links">
  <li><a href="#mission">Mission</a></li>
  <li><a href="#products">Shop</a></li>
- <li><a href="#services">Services</a></li>
+ <li><a href="#services">Studio</a></li>
  <li><a href="#nil">NIL</a></li>
  <li><a href="#music">Music</a></li>
+ <li><a href="#vision">Vision</a></li>
  <li><a href="#book">The Book</a></li>
  <li><a href="#about">About</a></li>
  <li><a href="#join" class="nav-cta">Join</a></li>
@@ -622,6 +653,10 @@ body { padding-bottom: 72px; }
  <div class="hero-inner" style="position:relative;z-index:2;">
  <img class="hero-logo" src="images/pyhi-logo.png" alt="PUTYAHEARTINIT">
  <p class="hero-tagline" id="heroTagline"></p>
+ <div class="hero-flagship">
+   <span class="hf-prefix">ALL YOU GOTTA DO IS</span>
+   <span class="hf-name">PUTYAHEARTINIT</span>
+ </div>
  <div class="hero-btns">
  <a href="https://putyaheartinit.com/shop" class="btn-w" target="_blank">Shop Now</a>
  <a href="#book" class="btn-outline">Explore the Book</a>
@@ -976,11 +1011,11 @@ body { padding-bottom: 72px; }
  </div>
 </section>
 
-<!-- ═══ CREATIVE SERVICES ═══ -->
+<!-- ═══ CREATIVE STUDIO ═══ -->
 <section class="services" id="services">
  <div class="ctn">
  <div class="rv">
- <p class="sec-label">Creative Services</p>
+ <p class="sec-label">Creative Studio</p>
  <div class="sec-heading">BUILD YOUR VISION</div>
  </div>
  <div class="svc-grid">
@@ -1009,25 +1044,29 @@ body { padding-bottom: 72px; }
  </div>
 </section>
 
-<!-- ═══ STATS / MILESTONES ═══ -->
-<section class="stats">
+<!-- ═══ SOCIAL PROOF METRICS ═══ -->
+<section class="stats" id="impact">
  <div class="ctn">
+ <div class="rv" style="text-align:center;margin-bottom:56px;">
+   <p class="sec-label">Real Impact. Real People.</p>
+   <div class="sec-heading" style="font-size:clamp(28px,4vw,42px);">THE NUMBERS SPEAK</div>
+ </div>
  <div class="stats-grid">
  <div class="stat-item rv">
- <div class="stat-num" data-target="5">0</div>
- <div class="stat-label">Years Active</div>
+ <div class="stat-num" data-target="100" data-suffix="+">0</div>
+ <div class="stat-label">Pieces Sold</div>
  </div>
  <div class="stat-item rv">
- <div class="stat-num" data-target="2500">0</div>
- <div class="stat-label">Products Sold</div>
+ <div class="stat-num" data-target="70" data-suffix="+">0</div>
+ <div class="stat-label">Cities Reached</div>
  </div>
  <div class="stat-item rv">
- <div class="stat-num" data-target="38">0</div>
- <div class="stat-label">States Reached</div>
+ <div class="stat-num" data-target="30" data-suffix="K+">0</div>
+ <div class="stat-label">Community Strong</div>
  </div>
  <div class="stat-item rv">
- <div class="stat-num" data-target="15000">0</div>
- <div class="stat-label">Community Members</div>
+ <div class="stat-num" data-target="6" data-suffix="M+">0</div>
+ <div class="stat-label">Streams Worldwide</div>
  </div>
  </div>
  </div>
@@ -1040,6 +1079,17 @@ body { padding-bottom: 72px; }
  <p class="sec-label">NIL Partnerships &amp; Ambassadors</p>
  <div class="sec-heading">ATHLETES WITH HEART</div>
  </div>
+ <!-- Current NIL Athlete Feature -->
+ <div class="nil-featured-athlete rv" style="background:var(--black2);border:1px solid rgba(255,255,255,0.06);border-left:3px solid var(--red);padding:28px 32px;margin-bottom:40px;display:flex;align-items:center;gap:28px;flex-wrap:wrap;">
+   <div style="flex:0 0 auto;">
+     <div style="font-size:9px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:6px;">Current NIL Athlete</div>
+     <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,3vw,42px);letter-spacing:3px;color:var(--white);line-height:1;">CAMERON DONALD</div>
+     <div style="font-size:11px;font-weight:400;letter-spacing:2px;text-transform:uppercase;color:var(--gray);margin-top:4px;">Florida A&amp;M University · Built Through The Fire</div>
+   </div>
+   <div style="flex:1;min-width:200px;border-left:1px solid rgba(255,255,255,0.06);padding-left:28px;">
+     <p style="font-size:13px;font-weight:300;color:var(--cream2);line-height:1.75;">Cameron Donald represents everything PUTYAHEARTINIT stands for — grit, heart, and purpose. A Rattler on and off the field, building a brand bigger than the game.</p>
+   </div>
+ </div>
  <div class="nil-layout">
  <div class="rv" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
  <div style="position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.04);aspect-ratio:3/4;">
@@ -1049,7 +1099,11 @@ body { padding-bottom: 72px; }
  <img src="images/nil-athlete-38.png" alt="NIL Athlete #38" style="width:100%;height:100%;object-fit:cover;transition:transform 0.5s;">
  </div>
  <div style="position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.04);aspect-ratio:3/4;">
- <img src="images/nil-donald-91.png" alt="Donald #91 Built Through The Fire" style="width:100%;height:100%;object-fit:cover;transition:transform 0.5s;">
+ <img src="images/nil-donald-91.png" alt="Cameron Donald #91 — Florida A&M University" style="width:100%;height:100%;object-fit:cover;transition:transform 0.5s;">
+ <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.85));padding:16px 12px;">
+   <div style="font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--white);">CAMERON DONALD</div>
+   <div style="font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--red);">FAMU · NIL ATHLETE</div>
+ </div>
  </div>
  </div>
  <div class="nil-features rv">
@@ -1776,6 +1830,62 @@ body { padding-bottom: 72px; }
  </div>
 </section>
 
+<!-- ═══ FUTURE VISION ROADMAP ═══ -->
+<section class="vision-sec" id="vision">
+ <div class="ctn">
+   <div class="vision-intro rv">
+     <p class="vision-eyebrow">What's Coming</p>
+     <div class="vision-title">THE WORLD<br><span class="ghost">WE'RE</span> BUILDING</div>
+     <p class="vision-sub">PUTYAHEARTINIT is more than a brand. It's an ecosystem. Here's where we're headed — and we're just getting started.</p>
+   </div>
+
+   <div class="vision-grid">
+
+     <div class="vision-card rv">
+       <div class="vision-card-num">01</div>
+       <div class="vision-card-status">COMING SOON</div>
+       <div class="vision-card-icon">📱</div>
+       <div class="vision-card-name">THE APP</div>
+       <div class="vision-card-desc">A full cultural platform in your pocket. Shop drops, track your community journey, access exclusive content, and connect with a global movement — all in one place.</div>
+       <div class="vision-card-eta">2025 — In Development</div>
+     </div>
+
+     <div class="vision-card rv">
+       <div class="vision-card-num">02</div>
+       <div class="vision-card-status">COMING SOON</div>
+       <div class="vision-card-icon">🎙</div>
+       <div class="vision-card-name">PODCASTS</div>
+       <div class="vision-card-desc">Raw conversations about building from nothing. Music, business, culture, mental fortitude, and what it really means to put your whole heart into your life's work.</div>
+       <div class="vision-card-eta">2025 — Pre-Production</div>
+     </div>
+
+     <div class="vision-card rv">
+       <div class="vision-card-num">03</div>
+       <div class="vision-card-status">COMING SOON</div>
+       <div class="vision-card-icon">🎬</div>
+       <div class="vision-card-name">DOCUSERIES</div>
+       <div class="vision-card-desc">Follow the story behind the movement. The sacrifices. The breakthroughs. The people. An unfiltered cinematic series documenting the rise of PUTYAHEARTINIT.</div>
+       <div class="vision-card-eta">2025 — In Development</div>
+     </div>
+
+     <div class="vision-card rv">
+       <div class="vision-card-num">04</div>
+       <div class="vision-card-status">COMING SOON</div>
+       <div class="vision-card-icon">🔥</div>
+       <div class="vision-card-name">EVENTS</div>
+       <div class="vision-card-desc">Live experiences. Pop-ups. Concerts. Community activations. From intimate brand drops to full-scale cultural events — bringing the movement off the screen and into real life.</div>
+       <div class="vision-card-eta">2025 — Activating</div>
+     </div>
+
+   </div>
+
+   <div class="vision-cta rv">
+     <p>The vision is clear. The foundation is built.</p>
+     <div class="vision-cta-word">PUTYAHEARTINIT</div>
+   </div>
+ </div>
+</section>
+
 <!-- ═══ MANIFESTO ═══ -->
 <section class="manifesto">
  <div class="ctn rv">
@@ -2035,9 +2145,10 @@ const counterObs=new IntersectionObserver(entries=>{
         const progress=Math.min(elapsed/duration,1);
         const eased=1-Math.pow(1-progress,3);
         const current=Math.floor(eased*target);
-        el.textContent=current.toLocaleString();
+        const suffix=el.dataset.suffix||'';
+        el.textContent=current.toLocaleString()+suffix;
         if(progress<1)requestAnimationFrame(update);
-        else el.textContent=target.toLocaleString();
+        else el.textContent=target.toLocaleString()+suffix;
       }
       requestAnimationFrame(update);
       counterObs.unobserve(el);
