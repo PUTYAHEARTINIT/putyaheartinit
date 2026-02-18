@@ -56,7 +56,7 @@ body{font-family:'Outfit',sans-serif;color:var(--cream2);background:var(--black)
 
 img{max-width:100%;display:block}
 a{text-decoration:none;color:inherit}
-.ctn{max-width:1200px;margin:0 auto;padding:0 40px}
+.ctn{max-width:1200px;margin:0 auto;padding:0 40px;position:relative;z-index:1}
 
 /* ═══ PRELOADER ═══ */
 .preloader{position:fixed;inset:0;z-index:9999;background:var(--black);display:flex;align-items:center;justify-content:center;flex-direction:column;transition:opacity 0.6s ease,visibility 0.6s ease}
@@ -119,6 +119,11 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.15);transform:scale(0);animation:rippleEffect 0.6s ease-out}
 @keyframes rippleEffect{to{transform:scale(4);opacity:0}}
 
+/* ═══ SECTION VIDEO BACKGROUNDS ═══ */
+.sec-video-wrap{position:absolute;inset:0;z-index:0;pointer-events:none}
+.sec-video{width:100%;height:100%;object-fit:cover;object-position:center}
+.sec-video-overlay{position:absolute;inset:0}
+
 /* ═══ BRAND TICKER ═══ */
 .brand-ticker{padding:20px 0;background:var(--red);overflow:hidden;position:relative}
 .ticker-track{display:flex;animation:tickerScroll 20s linear infinite;white-space:nowrap}
@@ -163,7 +168,7 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 .movement-sub{font-size:clamp(13px,1.5vw,18px);font-weight:300;color:var(--gray);margin-top:32px;letter-spacing:2px}
 
 /* ═══ SERVICES ═══ */
-.services{padding:100px 0;background:var(--black2);border-top:1px solid rgba(255,255,255,0.04)}
+.services{padding:100px 0;background:var(--black2);border-top:1px solid rgba(255,255,255,0.04);position:relative;overflow:hidden}
 .svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
 .svc-card{padding:40px 28px;background:var(--black);border:1px solid rgba(255,255,255,0.04);transition:all 0.4s cubic-bezier(0.22,1,0.36,1);position:relative}
 .svc-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:2px;background:var(--red);transform:scaleX(0);transition:transform 0.4s;transform-origin:left}
@@ -184,7 +189,7 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 .stat-label{font-size:10px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-top:8px}
 
 /* ═══ NIL ═══ */
-.nil{padding:100px 0;background:var(--black);border-top:1px solid rgba(255,255,255,0.04)}
+.nil{padding:100px 0;background:var(--black);border-top:1px solid rgba(255,255,255,0.04);position:relative;overflow:hidden}
 .nil-layout{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;margin-top:56px}
 .nil-visual{aspect-ratio:16/10;background:var(--black2);border:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
 .nil-visual::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(230,57,70,0.05),transparent 50%);pointer-events:none}
@@ -206,7 +211,7 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 .voice-role{font-size:10px;font-weight:300;color:var(--gray);margin-top:2px}
 
 /* ═══ ABOUT STEVIE ═══ */
-.about-sec{padding:100px 0;background:var(--black2);border-top:1px solid rgba(255,255,255,0.04)}
+.about-sec{padding:100px 0;background:var(--black2);border-top:1px solid rgba(255,255,255,0.04);position:relative;overflow:hidden}
 .about-layout{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;margin-top:56px}
 .about-photo{width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,0.5);transition:transform 0.5s}
 .about-photo:hover{transform:scale(1.02)}
@@ -258,7 +263,7 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 .platform-link .dot{width:6px;height:6px;border-radius:50%;background:var(--red)}
 
 /* ═══ MISSION ═══ */
-.mission-sec{padding:120px 0;background:var(--black2);border-top:1px solid rgba(255,255,255,0.04);position:relative}
+.mission-sec{padding:120px 0;background:var(--black2);border-top:1px solid rgba(255,255,255,0.04);position:relative;overflow:hidden}
 .mission-content{max-width:1000px;margin:0 auto}
 .mission-intro{text-align:center;margin-bottom:64px}
 .mission-lead{font-family:'Outfit',sans-serif;font-size:clamp(18px,2.5vw,28px);font-weight:400;line-height:1.6;color:var(--white);max-width:800px;margin:0 auto}
@@ -373,7 +378,7 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 .vision-cta-word{font-family:'Bebas Neue',sans-serif;font-size:clamp(24px,4vw,48px);letter-spacing:6px;color:var(--white);opacity:0.08}
 
 /* ═══ MANIFESTO ═══ */
-.manifesto{padding:160px 0;text-align:center;background:var(--black);position:relative}
+.manifesto{padding:160px 0;text-align:center;background:var(--black);position:relative;overflow:hidden}
 .manifesto-txt{font-family:'Outfit',sans-serif;font-size:clamp(22px,3vw,40px);font-weight:300;color:var(--cream);line-height:1.7;max-width:720px;margin:0 auto}
 .manifesto-txt span{font-weight:700;color:var(--white)}
 .m-line{width:60px;height:1px;background:var(--red);margin:32px auto}
@@ -700,6 +705,12 @@ body { padding-bottom: 72px; }
 
 <!-- ═══ MISSION ═══ -->
 <section class="mission-sec" id="mission">
+ <div class="sec-video-wrap">
+   <video class="sec-video" autoplay muted loop playsinline>
+     <source src="images/video-a.mp4" type="video/mp4">
+   </video>
+   <div class="sec-video-overlay" style="background:rgba(10,10,10,0.72)"></div>
+ </div>
  <div class="ctn">
  <div class="rv">
  <p class="sec-label">Our Mission</p>
@@ -1013,6 +1024,12 @@ body { padding-bottom: 72px; }
 
 <!-- ═══ THE MOVEMENT ═══ -->
 <section class="movement">
+ <div class="sec-video-wrap">
+   <video class="sec-video" autoplay muted loop playsinline>
+     <source src="images/video-b.mp4" type="video/mp4">
+   </video>
+   <div class="sec-video-overlay" style="background:rgba(10,10,10,0.78)"></div>
+ </div>
  <div class="movement-bg"></div>
  <div class="ctn rv">
  <p class="movement-text">THIS ISN'T A BRAND.<br>IT'S A FREQUENCY.</p>
@@ -1022,6 +1039,12 @@ body { padding-bottom: 72px; }
 
 <!-- ═══ CREATIVE STUDIO ═══ -->
 <section class="services" id="services">
+ <div class="sec-video-wrap">
+   <video class="sec-video" autoplay muted loop playsinline>
+     <source src="images/video-b.mp4" type="video/mp4">
+   </video>
+   <div class="sec-video-overlay" style="background:rgba(10,10,10,0.80)"></div>
+ </div>
  <div class="ctn">
  <div class="rv">
  <p class="sec-label">Creative Studio</p>
@@ -1083,6 +1106,12 @@ body { padding-bottom: 72px; }
 
 <!-- ═══ NIL PARTNERSHIPS ═══ -->
 <section class="nil" id="nil">
+ <div class="sec-video-wrap">
+   <video class="sec-video" autoplay muted loop playsinline>
+     <source src="images/video-b.mp4" type="video/mp4">
+   </video>
+   <div class="sec-video-overlay" style="background:rgba(10,10,10,0.75)"></div>
+ </div>
  <div class="ctn">
  <div class="rv">
  <p class="sec-label">NIL Partnerships &amp; Ambassadors</p>
@@ -1158,6 +1187,12 @@ body { padding-bottom: 72px; }
 
 <!-- ═══ ABOUT STEVIE ═══ -->
 <section class="about-sec" id="about">
+ <div class="sec-video-wrap">
+   <video class="sec-video" autoplay muted loop playsinline>
+     <source src="images/hero-video.mp4" type="video/mp4">
+   </video>
+   <div class="sec-video-overlay" style="background:rgba(10,10,10,0.78)"></div>
+ </div>
  <div class="ctn">
  <div class="about-layout">
  <div class="rv">
@@ -1897,6 +1932,12 @@ body { padding-bottom: 72px; }
 
 <!-- ═══ MANIFESTO ═══ -->
 <section class="manifesto">
+ <div class="sec-video-wrap">
+   <video class="sec-video" autoplay muted loop playsinline>
+     <source src="images/video-a.mp4" type="video/mp4">
+   </video>
+   <div class="sec-video-overlay" style="background:rgba(10,10,10,0.82)"></div>
+ </div>
  <div class="ctn rv">
  <img src="images/pyhi-logo.png" alt="PYHII" style="width:64px;margin:0 auto 28px;opacity:0.7;">
  <p class="manifesto-txt">"All I'm doing is reminding you of what you already know: that when you move with intention, when you align your emotion with your purpose, and when you <span>put ya heart in it</span> nothing can stop you."</p>
@@ -1907,6 +1948,12 @@ body { padding-bottom: 72px; }
 
 <!-- ═══ FINAL CTA ═══ -->
 <section class="final-cta" id="join">
+ <div class="sec-video-wrap">
+   <video class="sec-video" autoplay muted loop playsinline>
+     <source src="images/hero-video.mp4" type="video/mp4">
+   </video>
+   <div class="sec-video-overlay" style="background:rgba(10,10,10,0.76)"></div>
+ </div>
  <div class="final-cta-bg"></div>
  <div class="ctn rv" style="position:relative;z-index:1;">
  <p class="sec-label">Join the Movement</p>
