@@ -2587,6 +2587,7 @@ const QUIZ_QUESTIONS = [
 let quizStep = 0;
 let quizAnswers = [];
 const TOTAL_Q = QUIZ_QUESTIONS.length;
+var __pyhi_shareText = '';
 
 function quizStart() {
   document.getElementById('quizIntro').classList.remove('active');
@@ -2698,7 +2699,7 @@ function showQuizResults(data) {
   var pathsHtml = (data.paths||[]).map(function(p) {
     return '<div class="qr-path"><div class="qr-path-title">'+p.title+'</div><div class="qr-path-desc">'+p.description+'</div><div class="qr-path-why">'+p.why_it_fits+'</div></div>';
   }).join('');
-  var shareText = (data.share_text||'').replace(/'/g,"\'");
+  __pyhi_shareText = (data.share_text||'');
   document.getElementById('quizResults').innerHTML =
     '<div class="qr-type-label">Your PYHI Passion Profile</div>' +
     '<div class="qr-type">'+(data.personality_type||'')+'</div>' +
@@ -2708,7 +2709,7 @@ function showQuizResults(data) {
     '<div class="qr-paths">'+pathsHtml+'</div>' +
     '<div class="qr-rec"><div class="qr-rec-label">PYHI Recommends</div><div class="qr-rec-txt">'+(data.pyhi_recommendation||'')+'</div></div>' +
     '<div class="qr-actions">' +
-      '<button class="qr-share" onclick="quizShare(''+shareText+'')">Copy Share Text</button>' +
+      '<button class="qr-share" onclick="quizShare()">Copy Share Text</button>' +
       '<button class="qr-retake" onclick="quizRestart()">Retake Quiz</button>' +
     '</div>' +
     '<div class="qr-copied" id="qrCopied">Copied to clipboard</div>';
@@ -2717,8 +2718,8 @@ function showQuizResults(data) {
   setTimeout(function(){ document.getElementById('quizResults').classList.add('visible'); }, 100);
 }
 
-function quizShare(text) {
-  navigator.clipboard.writeText(text).then(function() {
+function quizShare() {
+  navigator.clipboard.writeText(__pyhi_shareText).then(function() {
     var el = document.getElementById('qrCopied');
     if (el) { el.classList.add('show'); setTimeout(function(){ el.classList.remove('show'); }, 2500); }
   });
