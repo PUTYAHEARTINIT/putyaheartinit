@@ -859,6 +859,13 @@
     if (state === 'idle') startGame();
   }, { passive: false });
 
+  // Tap anywhere on start screen also starts the game
+  startScreen.addEventListener('click', () => { if (state === 'idle') startGame(); });
+  startScreen.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (state === 'idle') startGame();
+  }, { passive: false });
+
   playAgainBtn.addEventListener('click', () => {
     idleActive = true;
     state = 'idle';

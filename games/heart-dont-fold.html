@@ -211,14 +211,15 @@
 
   canvas.addEventListener('touchmove', e => {
     e.preventDefault();
-    if (!touch || state !== 'playing') return;
+    if (state !== 'playing') return;
     const t = e.touches[0];
     const rect = canvas.getBoundingClientRect();
     const cx = (t.clientX - rect.left) / scale;
     const cy = (t.clientY - rect.top)  / scale;
-    player.x = Math.max(HEART_HALF, Math.min(W - HEART_HALF, player.x + (cx - touch.x)));
-    player.y = Math.max(HEART_HALF, Math.min(H - HEART_HALF, player.y + (cy - touch.y)));
-    touch.x = cx; touch.y = cy;
+    // Direct follow: player moves directly to touch position
+    player.x = Math.max(HEART_HALF, Math.min(W - HEART_HALF, cx));
+    player.y = Math.max(HEART_HALF, Math.min(H - HEART_HALF, cy));
+    touch = { x: cx, y: cy };
   }, { passive: false });
 
   canvas.addEventListener('touchend', e => {

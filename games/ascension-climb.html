@@ -783,12 +783,18 @@
   // Touch
   canvas.addEventListener('touchstart', e => {
     e.preventDefault();
-    if (state === 'start') { startGame(); return; }
     const rect = canvas.getBoundingClientRect();
     for (const t of e.changedTouches) {
       const cx = (t.clientX - rect.left) / scale;
       const cy = (t.clientY - rect.top)  / scale;
-      if (state === 'dead') { handleOverlayClick(cx, cy); return; }
+      if (state === 'start') {
+        startGame();
+        // Also register this touch as a directional input immediately
+        activeTouches.set(t.identifier, cx < LOGICAL_W / 2 ? 'left' : 'right');
+        updateKeys();
+        continue;
+      }
+      if (state === 'dead') { handleOverlayClick(cx, cy); continue; }
       activeTouches.set(t.identifier, cx < LOGICAL_W / 2 ? 'left' : 'right');
     }
     updateKeys();

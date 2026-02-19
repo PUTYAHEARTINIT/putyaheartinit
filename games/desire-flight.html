@@ -555,30 +555,30 @@
     }
 
     const lastCol = columns[columns.length - 1];
-    if (!lastCol || (lastCol.x - scrollX) < LOGIC_W - COL_SPAWN_DIST) {
-      spawnColumn(scrollX + LOGIC_W + 20);
+    if (!lastCol || lastCol.x < LOGIC_W - COL_SPAWN_DIST) {
+      spawnColumn(LOGIC_W + 20);
     }
 
     for (const col of columns) {
       col.x -= scrollSpeed;
-      const screenX = col.x - scrollX;
+      const screenX = col.x;
       if (screenX < LOGIC_W && screenX > -COL_WIDTH) {
         col.labelAlpha = Math.min(1, col.labelAlpha + 0.05);
       }
     }
 
-    columns = columns.filter(c => (c.x - scrollX) > -COL_WIDTH - 20);
+    columns = columns.filter(c => c.x > -COL_WIDTH - 20);
 
     for (const h of collectibles) {
       h.x     -= scrollSpeed;
       h.pulse += 0.08;
-      if (!h.collected && Math.abs(h.x - scrollX - PLAYER_X) < 20 && Math.abs(h.y - playerY) < 20) {
+      if (!h.collected && Math.abs(h.x - PLAYER_X) < 20 && Math.abs(h.y - playerY) < 20) {
         h.collected = true;
         score      += COLLECTIBLE_SCORE;
         flashTimer  = 12;
       }
     }
-    collectibles = collectibles.filter(h => !h.collected && (h.x - scrollX) > -20);
+    collectibles = collectibles.filter(h => !h.collected && h.x > -20);
 
     if (flashTimer > 0) flashTimer--;
 
@@ -590,7 +590,7 @@
     if (pTop < 0 || pBot > LOGIC_H) { die(); return; }
 
     for (const col of columns) {
-      const colScreenX = col.x - scrollX;
+      const colScreenX = col.x;
       const cLeft  = colScreenX;
       const cRight = colScreenX + COL_WIDTH;
       if (pRight < cLeft || pLeft > cRight) continue;
@@ -708,6 +708,12 @@
     holding = true;
   }
 
+  // Start screen: overlay intercepts events, so listen on it directly
+  startScreen.addEventListener('click', function() { startHold(); });
+  startScreen.addEventListener('touchstart', function(e) {
+    e.preventDefault(); startHold();
+  }, { passive: false });
+
   canvas.addEventListener('mousedown', startHold);
   window.addEventListener('mouseup',   endHold);
 
@@ -716,7 +722,7 @@
   }, { passive: false });
 
   window.addEventListener('touchend', function(e) {
-    e.preventDefault(); endHold();
+    endHold();
   }, { passive: false });
 
   window.addEventListener('keydown', function(e) {
