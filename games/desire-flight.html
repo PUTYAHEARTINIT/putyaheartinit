@@ -240,7 +240,7 @@
 
   .btn-outline {
     width: 100%;
-    padding: 13px 0;
+    padding: 16px 0;
     background: transparent;
     color: #fff;
     font-family: 'Bebas Neue', sans-serif;
@@ -718,12 +718,16 @@
   window.addEventListener('mouseup',   endHold);
 
   canvas.addEventListener('touchstart', function(e) {
-    e.preventDefault(); startHold();
+    e.preventDefault();
+    if (e.touches.length > 1) return;
+    startHold();
   }, { passive: false });
 
   window.addEventListener('touchend', function(e) {
-    endHold();
+    if (e.touches.length === 0) endHold();
   }, { passive: false });
+
+  window.addEventListener('touchcancel', function() { endHold(); });
 
   window.addEventListener('keydown', function(e) {
     if (e.code === 'Space' || e.code === 'ArrowUp') {

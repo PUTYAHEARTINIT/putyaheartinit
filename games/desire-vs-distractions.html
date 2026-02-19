@@ -703,6 +703,7 @@
 
   function startGame() {
     state        = 'playing';
+    idleActive   = false;
     holding = hMouse = hTouch = hSpace = false;
     survivalTime = 0;
     spawnTimer   = 0;
@@ -836,6 +837,7 @@
 
   canvas.addEventListener('touchstart', e => {
     e.preventDefault();
+    if (e.touches.length > 1) return;
     if (state === 'idle')    { startGame(); return; }
     if (state === 'playing') { hTouch = true; syncHold(); }
   }, { passive: false });

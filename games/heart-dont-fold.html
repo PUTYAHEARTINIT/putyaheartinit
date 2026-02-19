@@ -200,6 +200,7 @@
 
   canvas.addEventListener('touchstart', e => {
     e.preventDefault();
+    if (e.touches.length > 1) return;
     const t = e.touches[0];
     const rect = canvas.getBoundingClientRect();
     touch = {
@@ -207,6 +208,10 @@
       y: (t.clientY - rect.top)  / scale,
     };
     if (state === 'start') { startGame(); return; }
+  }, { passive: false });
+
+  canvas.addEventListener('touchcancel', e => {
+    touch = null;
   }, { passive: false });
 
   canvas.addEventListener('touchmove', e => {
@@ -560,8 +565,8 @@
     ctx.fillText("PLAY AGAIN", W/2, btnY + btnH/2);
     ctx.restore();
 
-    const qY = btnY + btnH + 26;
-    quizBtn = { x: W/2 - 110, y: qY - 14, w: 220, h: 22 };
+    const qY = btnY + btnH + 36;
+    quizBtn = { x: W/2 - 120, y: qY - 22, w: 240, h: 44 };
     ctx.save();
     ctx.font = "12px 'Outfit', sans-serif";
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
