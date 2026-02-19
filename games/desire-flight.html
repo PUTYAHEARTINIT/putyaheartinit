@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Desire Flight — PUTYAHEARTINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #0a0a0a;
+    overflow: hidden;
+    font-family: 'Outfit', sans-serif;
+    color: #fff;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: rgba(10,10,10,0.96);
+    border-bottom: 1px solid rgba(230,57,70,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    z-index: 100;
+  }
+
+  .back-link {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: #888;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: #E63946; }
+
+  .game-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.18em;
+    color: #C9A84C;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .score-display {
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #888;
+    text-transform: uppercase;
+  }
+
+  #scoreVal {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  #c {
+    display: block;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 56px);
+    cursor: pointer;
+  }
+
+  .overlay {
+    position: fixed;
+    top: 56px; left: 0; right: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(10,10,10,0.92);
+    z-index: 50;
+    padding: 24px;
+  }
+
+  #startScreen .trial-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: #E63946;
+    margin-bottom: 18px;
+  }
+
+  #startScreen .big-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 12vw, 80px);
+    letter-spacing: 0.12em;
+    color: #fff;
+    line-height: 1;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  #startScreen .sub-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(28px, 6vw, 40px);
+    letter-spacing: 0.1em;
+    color: #C9A84C;
+    margin-bottom: 36px;
+  }
+
+  .instruction-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 48px;
+  }
+
+  .instruction-block .inst-line {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    color: #ccc;
+    text-align: center;
+  }
+  .instruction-block .inst-line span {
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .tap-begin {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.3em;
+    color: #E63946;
+    animation: pulse-tap 1.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse-tap {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  #gameOverScreen { display: none; }
+
+  #gameOverScreen .go-score-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  #gameOverScreen .go-score-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(64px, 15vw, 96px);
+    letter-spacing: 0.05em;
+    color: #fff;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  #gameOverScreen .go-best {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    color: #C9A84C;
+    margin-bottom: 32px;
+  }
+
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(230,57,70,0.4);
+    margin: 0 auto 28px;
+  }
+
+  #gameOverScreen .heart-type {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(32px, 8vw, 52px);
+    letter-spacing: 0.15em;
+    color: #C9A84C;
+    text-align: center;
+    margin-bottom: 8px;
+    line-height: 1.1;
+  }
+
+  #gameOverScreen .heart-tag {
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: #ccc;
+    text-align: center;
+    max-width: 280px;
+    line-height: 1.5;
+    margin-bottom: 40px;
+  }
+
+  .btn-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 280px;
+    align-items: center;
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px 0;
+    background: #E63946;
+    color: #fff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.25em;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #c02a36; }
+
+  .btn-outline {
+    width: 100%;
+    padding: 13px 0;
+    background: transparent;
+    color: #fff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.2em;
+    border: 1px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .btn-outline:hover { border-color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="back-link">← PUTYAHEARTINIT</a>
+  <div class="game-title">DESIRE FLIGHT</div>
+  <div class="score-display">SCORE: <span id="scoreVal">0</span></div>
+</header>
+
+<canvas id="c"></canvas>
+
+<div id="startScreen" class="overlay">
+  <div class="trial-label">Trial 01 — Perseverance</div>
+  <div class="big-title">DESIRE</div>
+  <div class="sub-title">FLIGHT</div>
+  <div class="instruction-block">
+    <div class="inst-line"><span>HOLD</span> to fly upward</div>
+    <div class="inst-line"><span>RELEASE</span> to fall with gravity</div>
+    <div class="inst-line" style="margin-top:4px; color:#555;">Navigate through every obstacle</div>
+  </div>
+  <div class="tap-begin">TAP TO BEGIN</div>
+</div>
+
+<div id="gameOverScreen" class="overlay">
+  <div class="go-score-label">FINAL SCORE</div>
+  <div class="go-score-val" id="goScore">0</div>
+  <div class="go-best" id="goBest">BEST: 0</div>
+  <div class="divider"></div>
+  <div class="heart-type" id="goHeartType">THE SURVIVOR</div>
+  <div class="heart-tag" id="goHeartTag">You kept going. That's already rare.</div>
+  <div class="btn-row">
+    <button class="btn-primary" id="playAgainBtn">PLAY AGAIN</button>
+    <a href="/#quiz" class="btn-outline">TAKE THE FULL QUIZ →</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const LOGIC_W = 360;
+  const LOGIC_H = 640;
+  const GRAVITY = 0.4;
+  const THRUST = -0.7;
+  const MAX_FALL = 8;
+  const PLAYER_X = 80;
+  const COL_WIDTH = 50;
+  const COL_SPAWN_DIST = 220;
+  const COL_LABELS = ['DOUBT', 'FEAR', 'NOISE', 'HATERS', 'LIMITS'];
+  const PARTICLE_COUNT = 40;
+  const HEART_SIZE = 16;
+  const COLLECTIBLE_SCORE = 10;
+  const LOCAL_BEST_KEY = 'df_best';
+
+  const HEART_TYPES = [
+    { min: 300, title: 'THE VISIONARY',  tag: 'Your ceiling is the sky.' },
+    { min: 150, title: 'THE CREATOR',    tag: 'You find ways when there are none.' },
+    { min:  50, title: 'THE WARRIOR',    tag: 'You fight through. The world needs fighters.' },
+    { min:   0, title: 'THE SURVIVOR',   tag: "You kept going. That's already rare." },
+  ];
+
+  function getHeartType(score) {
+    for (const ht of HEART_TYPES) {
+      if (score >= ht.min) return ht;
+    }
+    return HEART_TYPES[HEART_TYPES.length - 1];
+  }
+
+  const canvas      = document.getElementById('c');
+  const ctx         = canvas.getContext('2d');
+  const scoreValEl  = document.getElementById('scoreVal');
+  const startScreen = document.getElementById('startScreen');
+  const goScreen    = document.getElementById('gameOverScreen');
+  const goScoreEl   = document.getElementById('goScore');
+  const goBestEl    = document.getElementById('goBest');
+  const goHeartType = document.getElementById('goHeartType');
+  const goHeartTag  = document.getElementById('goHeartTag');
+  const playAgainBtn= document.getElementById('playAgainBtn');
+
+  let scale = 1;
+  let canvasW = 0, canvasH = 0;
+
+  function resize() {
+    const W = window.innerWidth;
+    const H = window.innerHeight - 56;
+    canvas.width  = W;
+    canvas.height = H;
+    canvasW = W;
+    canvasH = H;
+    scale = Math.min(W / LOGIC_W, H / LOGIC_H);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+
+  let state = 'start';
+  let holding = false;
+  let playerY, playerVY;
+  let score, frame, scrollX, scrollSpeed;
+  let gapHeight;
+  let labelIndex;
+  let flashTimer;
+  let best;
+  let columns = [];
+  let collectibles = [];
+  let particles = [];
+
+  function initParticles() {
+    particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * LOGIC_W,
+        y: Math.random() * LOGIC_H,
+        r: Math.random() * 1.5 + 0.4,
+        speed: Math.random() * 0.6 + 0.2,
+        alpha: Math.random() * 0.4 + 0.1,
+        layer: Math.floor(Math.random() * 3),
+      });
+    }
+  }
+
+  function initGame() {
+    playerY    = LOGIC_H / 2;
+    playerVY   = 0;
+    score      = 0;
+    frame      = 0;
+    scrollX    = 0;
+    scrollSpeed= 3;
+    gapHeight  = 160;
+    labelIndex = 0;
+    flashTimer = 0;
+    columns    = [];
+    collectibles = [];
+    holding    = false;
+    best       = parseInt(localStorage.getItem(LOCAL_BEST_KEY) || '0', 10);
+    initParticles();
+    spawnColumn(LOGIC_W + 100);
+  }
+
+  function spawnColumn(x) {
+    const minTop = 60;
+    const maxTop = LOGIC_H - gapHeight - 60;
+    const topH   = minTop + Math.random() * (maxTop - minTop);
+    const label  = COL_LABELS[labelIndex % COL_LABELS.length];
+    labelIndex++;
+    columns.push({
+      x,
+      topH,
+      botY: topH + gapHeight,
+      botH: LOGIC_H - (topH + gapHeight),
+      label,
+      passed: false,
+      labelAlpha: 0,
+    });
+    if (Math.random() < 0.6) {
+      const cy = topH + gapHeight * (0.25 + Math.random() * 0.5);
+      collectibles.push({
+        x: x + COL_WIDTH + 40 + Math.random() * 60,
+        y: cy,
+        collected: false,
+        pulse: Math.random() * Math.PI * 2,
+      });
+    }
+  }
+
+  function lx(v) { return (canvasW - LOGIC_W * scale) / 2 + v * scale; }
+  function ly(v) { return v * scale; }
+  function ls(v) { return v * scale; }
+
+  function drawFlame(px, py, vy) {
+    const tilt = Math.max(-0.5, Math.min(0.5, vy * 0.06));
+    const flicker = 0.85 + Math.sin(frame * 0.4) * 0.08 + Math.sin(frame * 0.9) * 0.04;
+    const sz = ls(14);
+
+    ctx.save();
+    ctx.translate(px, py);
+    ctx.rotate(tilt);
+    ctx.globalAlpha = flicker;
+
+    const grd = ctx.createRadialGradient(0, 0, 0, 0, 0, sz * 2.2);
+    grd.addColorStop(0,   'rgba(201,168,76,0.55)');
+    grd.addColorStop(0.5, 'rgba(230,57,70,0.18)');
+    grd.addColorStop(1,   'rgba(230,57,70,0)');
+    ctx.beginPath();
+    ctx.arc(0, 0, sz * 2.2, 0, Math.PI * 2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(0, -sz * 1.6);
+    ctx.bezierCurveTo( sz * 0.8, -sz * 0.5,  sz * 0.9, sz * 0.5,  0, sz * 1.0);
+    ctx.bezierCurveTo(-sz * 0.9,  sz * 0.5, -sz * 0.8, -sz * 0.5, 0, -sz * 1.6);
+
+    const fGrd = ctx.createLinearGradient(0, -sz * 1.6, 0, sz * 1.0);
+    fGrd.addColorStop(0,    '#fff8e7');
+    fGrd.addColorStop(0.25, '#C9A84C');
+    fGrd.addColorStop(0.65, '#E63946');
+    fGrd.addColorStop(1,    'rgba(230,57,70,0.3)');
+    ctx.fillStyle = fGrd;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(0, -sz * 0.9);
+    ctx.bezierCurveTo( sz * 0.35, -sz * 0.2,  sz * 0.35, sz * 0.3, 0, sz * 0.5);
+    ctx.bezierCurveTo(-sz * 0.35,  sz * 0.3, -sz * 0.35, -sz * 0.2, 0, -sz * 0.9);
+    ctx.fillStyle = 'rgba(255,248,230,0.7)';
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawHeart(cx, cy, size, alpha, pulse) {
+    const s = size * (1 + Math.sin(pulse) * 0.12);
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(cx, cy);
+    ctx.beginPath();
+    ctx.moveTo(0, s * 0.35);
+    ctx.bezierCurveTo(-s * 0.6, -s * 0.15, -s * 1.1, s * 0.4,  0, s * 1.0);
+    ctx.bezierCurveTo( s * 1.1,  s * 0.4,   s * 0.6, -s * 0.15, 0, s * 0.35);
+    const hGrd = ctx.createRadialGradient(0, 0, 0, 0, 0, s);
+    hGrd.addColorStop(0,   '#fff8e0');
+    hGrd.addColorStop(0.5, '#C9A84C');
+    hGrd.addColorStop(1,   'rgba(201,168,76,0.4)');
+    ctx.fillStyle = hGrd;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawColumn(col) {
+    const cx = lx(col.x);
+    const cw = ls(COL_WIDTH);
+
+    ctx.save();
+    ctx.fillStyle = '#111';
+    ctx.fillRect(cx, 0, cw, ly(col.topH));
+    ctx.strokeStyle = 'rgba(230,57,70,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(cx, 0, cw, ly(col.topH));
+
+    ctx.fillStyle = '#111';
+    ctx.fillRect(cx, ly(col.botY), cw, ly(col.botH));
+    ctx.strokeStyle = 'rgba(230,57,70,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(cx, ly(col.botY), cw, ly(col.botH));
+
+    if (col.labelAlpha > 0) {
+      ctx.globalAlpha = col.labelAlpha;
+      ctx.font = `${ls(9)}px 'Bebas Neue', sans-serif`;
+      ctx.fillStyle = 'rgba(230,57,70,0.85)';
+      ctx.textAlign = 'center';
+      const midGapY = ly(col.topH + gapHeight / 2);
+      ctx.fillText(col.label, cx + cw / 2, midGapY + ls(4));
+    }
+    ctx.restore();
+  }
+
+  function drawVignette() {
+    ctx.save();
+    const vgrd = ctx.createRadialGradient(
+      canvasW / 2, canvasH / 2, canvasH * 0.2,
+      canvasW / 2, canvasH / 2, canvasH * 0.85
+    );
+    vgrd.addColorStop(0, 'rgba(10,10,10,0)');
+    vgrd.addColorStop(1, 'rgba(230,57,70,0.22)');
+    ctx.fillStyle = vgrd;
+    ctx.fillRect(0, 0, canvasW, canvasH);
+    ctx.restore();
+  }
+
+  function drawFlash() {
+    if (flashTimer <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = (flashTimer / 12) * 0.18;
+    ctx.fillStyle = '#C9A84C';
+    ctx.fillRect(0, 0, canvasW, canvasH);
+    ctx.restore();
+  }
+
+  function update() {
+    frame++;
+    const accel = holding ? THRUST : GRAVITY;
+    playerVY += accel;
+    playerVY  = Math.min(playerVY, MAX_FALL);
+    playerY  += playerVY;
+
+    scrollSpeed += 0.0005;
+    scrollX     += scrollSpeed;
+    gapHeight    = Math.max(120, 160 - frame * 0.012);
+
+    score++;
+    scoreValEl.textContent = score;
+
+    for (const p of particles) {
+      const spd = p.speed + (p.layer === 0 ? 0 : p.layer === 1 ? 0.5 : 1) * scrollSpeed * 0.15;
+      p.x -= spd;
+      if (p.x < 0) { p.x = LOGIC_W + 2; p.y = Math.random() * LOGIC_H; }
+    }
+
+    const lastCol = columns[columns.length - 1];
+    if (!lastCol || (lastCol.x - scrollX) < LOGIC_W - COL_SPAWN_DIST) {
+      spawnColumn(scrollX + LOGIC_W + 20);
+    }
+
+    for (const col of columns) {
+      col.x -= scrollSpeed;
+      const screenX = col.x - scrollX;
+      if (screenX < LOGIC_W && screenX > -COL_WIDTH) {
+        col.labelAlpha = Math.min(1, col.labelAlpha + 0.05);
+      }
+    }
+
+    columns = columns.filter(c => (c.x - scrollX) > -COL_WIDTH - 20);
+
+    for (const h of collectibles) {
+      h.x     -= scrollSpeed;
+      h.pulse += 0.08;
+      if (!h.collected && Math.abs(h.x - scrollX - PLAYER_X) < 20 && Math.abs(h.y - playerY) < 20) {
+        h.collected = true;
+        score      += COLLECTIBLE_SCORE;
+        flashTimer  = 12;
+      }
+    }
+    collectibles = collectibles.filter(h => !h.collected && (h.x - scrollX) > -20);
+
+    if (flashTimer > 0) flashTimer--;
+
+    const pLeft  = PLAYER_X - 8;
+    const pRight = PLAYER_X + 8;
+    const pTop   = playerY - 14;
+    const pBot   = playerY + 10;
+
+    if (pTop < 0 || pBot > LOGIC_H) { die(); return; }
+
+    for (const col of columns) {
+      const colScreenX = col.x - scrollX;
+      const cLeft  = colScreenX;
+      const cRight = colScreenX + COL_WIDTH;
+      if (pRight < cLeft || pLeft > cRight) continue;
+      if (pTop < col.topH) { die(); return; }
+      if (pBot > col.botY) { die(); return; }
+    }
+  }
+
+  function die() {
+    state   = 'dead';
+    holding = false;
+    if (score > best) {
+      best = score;
+      localStorage.setItem(LOCAL_BEST_KEY, best);
+    }
+    const ht = getHeartType(score);
+    goScoreEl.textContent   = score;
+    goBestEl.textContent    = 'BEST: ' + best;
+    goHeartType.textContent = ht.title;
+    goHeartTag.textContent  = ht.tag;
+    goScreen.style.display  = 'flex';
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvasW, canvasH);
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, canvasW, canvasH);
+
+    ctx.save();
+    for (const p of particles) {
+      if (p.layer !== 0) continue;
+      ctx.globalAlpha = p.alpha * 0.5;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(lx(p.x), ly(p.y), ls(p.r), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    for (const p of particles) {
+      if (p.layer !== 1) continue;
+      ctx.globalAlpha = p.alpha * 0.75;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(lx(p.x), ly(p.y), ls(p.r), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    for (const col of columns) drawColumn(col);
+
+    ctx.save();
+    for (const h of collectibles) {
+      if (h.collected) continue;
+      const hx = lx(h.x - scrollX);
+      const hy = ly(h.y);
+      drawHeart(hx, hy, ls(HEART_SIZE * 0.5), 0.9, h.pulse);
+    }
+    ctx.restore();
+
+    ctx.save();
+    for (const p of particles) {
+      if (p.layer !== 2) continue;
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(lx(p.x), ly(p.y), ls(p.r), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    drawFlame(lx(PLAYER_X), ly(playerY), playerVY);
+    drawFlash();
+    drawVignette();
+  }
+
+  function loop() {
+    if (state === 'playing') {
+      update();
+      draw();
+    } else if (state === 'start') {
+      frame++;
+      for (const p of particles) {
+        p.x -= p.speed * 0.5;
+        if (p.x < 0) { p.x = LOGIC_W + 2; p.y = Math.random() * LOGIC_H; }
+      }
+      ctx.clearRect(0, 0, canvasW, canvasH);
+      ctx.fillStyle = '#0a0a0a';
+      ctx.fillRect(0, 0, canvasW, canvasH);
+      ctx.save();
+      for (const p of particles) {
+        ctx.globalAlpha = p.alpha * 0.5;
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(lx(p.x), ly(p.y), ls(p.r), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+      drawFlame(lx(PLAYER_X), ly(LOGIC_H / 2 + Math.sin(frame * 0.04) * 12), 0);
+      drawVignette();
+    }
+    requestAnimationFrame(loop);
+  }
+
+  function startHold() {
+    if (state === 'start') { startGame(); return; }
+    if (state === 'playing') holding = true;
+  }
+
+  function endHold() { holding = false; }
+
+  function startGame() {
+    startScreen.style.display = 'none';
+    goScreen.style.display    = 'none';
+    initGame();
+    state   = 'playing';
+    holding = true;
+  }
+
+  canvas.addEventListener('mousedown', startHold);
+  window.addEventListener('mouseup',   endHold);
+
+  canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault(); startHold();
+  }, { passive: false });
+
+  window.addEventListener('touchend', function(e) {
+    e.preventDefault(); endHold();
+  }, { passive: false });
+
+  window.addEventListener('keydown', function(e) {
+    if (e.code === 'Space' || e.code === 'ArrowUp') {
+      e.preventDefault();
+      if (!e.repeat) startHold();
+    }
+  });
+
+  window.addEventListener('keyup', function(e) {
+    if (e.code === 'Space' || e.code === 'ArrowUp') {
+      e.preventDefault(); endHold();
+    }
+  });
+
+  playAgainBtn.addEventListener('click', function() {
+    goScreen.style.display = 'none';
+    startGame();
+  });
+
+  initParticles();
+  playerY  = LOGIC_H / 2;
+  playerVY = 0;
+  frame    = 0;
+  state    = 'start';
+  startScreen.style.display = 'flex';
+  loop();
+
+})();
+</script>
+</body>
+</html>

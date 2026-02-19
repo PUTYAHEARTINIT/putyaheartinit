@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Desire vs Distractions — PUTYAHEARTINIT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: #0a0a0a;
+    overflow: hidden;
+    font-family: 'Outfit', sans-serif;
+    color: #fff;
+  }
+
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: #0a0a0a;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 100;
+  }
+
+  .header-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.12em;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .header-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+  }
+
+  .header-score-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    color: #888;
+    text-transform: uppercase;
+  }
+
+  #headerBest {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    color: #555;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+
+  #headerScore {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px;
+    color: #C9A84C;
+    min-width: 48px;
+    text-align: right;
+    line-height: 1;
+  }
+
+  canvas {
+    display: block;
+    position: fixed;
+    top: 56px;
+    touch-action: none;
+    user-select: none;
+  }
+
+  .overlay {
+    position: fixed;
+    top: 56px; left: 0; right: 0; bottom: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .overlay.visible {
+    display: flex;
+    pointer-events: all;
+  }
+
+  .overlay.shown { opacity: 1; }
+
+  #startScreen { background: rgba(10,10,10,0.95); }
+
+  .start-trial {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.35em;
+    color: #E63946;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .start-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 11vw, 76px);
+    letter-spacing: 0.05em;
+    color: #fff;
+    text-align: center;
+    line-height: 0.9;
+    margin-bottom: 10px;
+  }
+
+  .start-vs {
+    color: #C9A84C;
+    display: block;
+    font-size: 0.55em;
+    letter-spacing: 0.4em;
+  }
+
+  .start-sub {
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 300;
+    color: #777;
+    text-align: center;
+    max-width: 300px;
+    line-height: 1.65;
+    margin-bottom: 36px;
+    padding: 0 20px;
+  }
+
+  .start-sub strong { color: #fff; font-weight: 700; }
+
+  .controls-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 44px;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 0 16px;
+  }
+
+  .ctrl-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #555;
+    letter-spacing: 0.06em;
+  }
+
+  .ctrl-key {
+    background: #111;
+    border: 1px solid #2a2a2a;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: #888;
+    letter-spacing: 0.1em;
+  }
+
+  #tapToBegin {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.28em;
+    color: #E63946;
+    cursor: pointer;
+    border: 1px solid rgba(230,57,70,0.5);
+    padding: 14px 44px;
+    animation: pulseTap 1.5s ease-in-out infinite;
+    transition: background 0.2s;
+    user-select: none;
+  }
+
+  #tapToBegin:hover { background: rgba(230,57,70,0.1); }
+
+  @keyframes pulseTap {
+    0%, 100% { opacity: 1; border-color: rgba(230,57,70,0.5); }
+    50%       { opacity: 0.4; border-color: rgba(230,57,70,0.15); }
+  }
+
+  #gameOverScreen { background: rgba(10,10,10,0.97); }
+
+  .go-label {
+    font-family: 'Outfit', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.4em;
+    color: #444;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .go-score-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 28px;
+  }
+
+  .go-score-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 20vw, 130px);
+    color: #C9A84C;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .go-score-unit {
+    font-family: 'Outfit', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: #444;
+    text-transform: uppercase;
+    margin-top: -6px;
+  }
+
+  .go-rule {
+    width: 40px;
+    height: 1px;
+    background: #1e1e1e;
+    margin: 0 auto 24px;
+  }
+
+  .go-heart-type {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(28px, 7vw, 48px);
+    letter-spacing: 0.12em;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 10px;
+    padding: 0 20px;
+  }
+
+  .go-tagline {
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    font-style: italic;
+    color: #777;
+    text-align: center;
+    max-width: 260px;
+    line-height: 1.65;
+    margin-bottom: 6px;
+    padding: 0 20px;
+  }
+
+  .go-best-line {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    color: #333;
+    letter-spacing: 0.08em;
+    margin-bottom: 36px;
+  }
+
+  .go-best-line span { color: #C9A84C; }
+
+  .go-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  #playAgainBtn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.22em;
+    color: #fff;
+    background: #E63946;
+    border: none;
+    padding: 15px 52px;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.1s;
+    outline: none;
+  }
+
+  #playAgainBtn:hover  { background: #c72f3c; }
+  #playAgainBtn:active { transform: scale(0.97); }
+
+  .go-quiz-link {
+    font-family: 'Outfit', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: #444;
+    text-decoration: none;
+    text-transform: uppercase;
+    border-bottom: 1px solid #222;
+    padding-bottom: 2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .go-quiz-link:hover { color: #C9A84C; border-color: #C9A84C; }
+
+  #flashOverlay {
+    position: fixed;
+    top: 56px; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 45;
+    background: rgba(230,57,70,0);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="header-brand" href="/">PUTYAHEARTINIT</a>
+  <div class="header-right">
+    <div class="header-info">
+      <div class="header-score-label">Focus Time</div>
+      <div id="headerBest">Best: <span id="bestDisplay">0</span>s</div>
+    </div>
+    <div id="headerScore">0</div>
+  </div>
+</header>
+
+<canvas id="c"></canvas>
+<div id="flashOverlay"></div>
+
+<div class="overlay" id="startScreen">
+  <div class="start-trial">Trial 02 — Focus</div>
+  <div class="start-title">
+    DESIRE
+    <span class="start-vs">VS</span>
+    DISTRACTIONS
+  </div>
+  <p class="start-sub"><strong>HOLD</strong> to focus. Release and the noise rushes in.</p>
+  <div class="controls-row">
+    <div class="ctrl-item"><span class="ctrl-key">HOLD</span> Mouse / Touch</div>
+    <div class="ctrl-item"><span class="ctrl-key">SPACE</span> Keyboard</div>
+  </div>
+  <div id="tapToBegin">TAP TO BEGIN</div>
+</div>
+
+<div class="overlay" id="gameOverScreen">
+  <div class="go-label">Game Over</div>
+  <div class="go-score-block">
+    <div class="go-score-num" id="goScore">0</div>
+    <div class="go-score-unit">Seconds Survived</div>
+  </div>
+  <div class="go-rule"></div>
+  <div class="go-heart-type" id="goHeartType">THE SURVIVOR</div>
+  <div class="go-tagline" id="goTagline">"You kept going. That's already rare."</div>
+  <div class="go-best-line">Best: <span id="goBest">0</span>s</div>
+  <div class="go-actions">
+    <button id="playAgainBtn">PLAY AGAIN</button>
+    <a class="go-quiz-link" href="/#quiz">Take the Full Quiz &rarr;</a>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const canvas       = document.getElementById('c');
+  const ctx          = canvas.getContext('2d');
+  const startScreen  = document.getElementById('startScreen');
+  const goScreen     = document.getElementById('gameOverScreen');
+  const flashEl      = document.getElementById('flashOverlay');
+  const headerScore  = document.getElementById('headerScore');
+  const bestDisplay  = document.getElementById('bestDisplay');
+  const goScoreEl    = document.getElementById('goScore');
+  const goHeartEl    = document.getElementById('goHeartType');
+  const goTagEl      = document.getElementById('goTagline');
+  const goBestEl     = document.getElementById('goBest');
+  const tapBtn       = document.getElementById('tapToBegin');
+  const playAgainBtn = document.getElementById('playAgainBtn');
+
+  const W = 600, H = 600, CX = 300, CY = 300;
+
+  const LABELS = ['NOTIFICATIONS','DOUBT','MONEY','FAME','FEAR','HATERS','EXCUSES','NOISE'];
+
+  const HEART_TYPES = [
+    { min:  0, max: 14,       title: 'THE SURVIVOR',  tag: '"You kept going. That\'s already rare."'         },
+    { min: 15, max: 44,       title: 'THE WARRIOR',   tag: '"You fight through. The world needs fighters."'  },
+    { min: 45, max: 89,       title: 'THE CREATOR',   tag: '"You find ways when there are none."'            },
+    { min: 90, max: Infinity, title: 'THE VISIONARY', tag: '"Your ceiling is the sky."'                      },
+  ];
+
+  const ORBIT_MIN   = 240;
+  const ORBIT_MAX   = 290;
+  const RUSH_SPEED  = 88;
+  const HIT_RADIUS  = 38;
+  const SPAWN_EVERY = 8;
+  const MAX_LIVES   = 3;
+  const FLASH_DUR   = 320;
+
+  let best = parseInt(localStorage.getItem('dvd_best') || '0', 10);
+  bestDisplay.textContent = best;
+  goBestEl.textContent    = best;
+
+  let state        = 'idle';
+  let holding      = false;
+  let hMouse = false, hTouch = false, hSpace = false;
+  let survivalTime = 0;
+  let spawnTimer   = 0;
+  let focusPoints  = MAX_LIVES;
+  let flashTimer   = 0;
+  let lastTs       = null;
+  let distractions = [];
+  let particles    = [];
+
+  let gridAngle   = 0;
+  let flamePhase  = 0;
+  let shieldPhase = 0;
+  let pulsePhase  = 0;
+  let shakeX = 0, shakeY = 0, shakeDur = 0, shakeMag = 0;
+  let scale = 1;
+
+  function resize() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight - 56;
+    scale = Math.min(vw / W, vh / H);
+    const cw = Math.round(W * scale);
+    const ch = Math.round(H * scale);
+    canvas.width        = cw;
+    canvas.height       = ch;
+    canvas.style.width  = cw + 'px';
+    canvas.style.height = ch + 'px';
+    canvas.style.left   = Math.round((vw - cw) / 2) + 'px';
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function makeDistraction(idx, forcedAngle) {
+    const angle  = forcedAngle !== undefined ? forcedAngle : Math.random() * Math.PI * 2;
+    const orbitR = ORBIT_MIN + Math.random() * (ORBIT_MAX - ORBIT_MIN);
+    const COLORS = ['#E63946', '#888888', '#C9A84C', 'rgba(255,255,255,0.45)'];
+    return {
+      angle,
+      orbitR,
+      curR: orbitR,
+      angSpeed: 0.22 + Math.random() * 0.18,
+      label: LABELS[idx % LABELS.length],
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      w: 96, h: 22,
+    };
+  }
+
+  function initDistractions() {
+    distractions = [];
+    for (let i = 0; i < 5; i++) {
+      distractions.push(makeDistraction(i, (Math.PI * 2 / 5) * i));
+    }
+  }
+
+  function emitParticles() {
+    const n = 2 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < n; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = 35 + Math.random() * 90;
+      particles.push({
+        x: CX, y: CY,
+        vx: Math.cos(angle) * spd,
+        vy: Math.sin(angle) * spd,
+        life: 1,
+        decay: 0.7 + Math.random() * 1.0,
+        r: 1.5 + Math.random() * 2.5,
+        gold: Math.random() > 0.35,
+      });
+    }
+  }
+
+  function updateParticles(dt) {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.life -= p.decay * dt;
+      p.x    += p.vx * dt;
+      p.y    += p.vy * dt;
+      p.vx   *= Math.pow(0.94, dt * 60);
+      p.vy   *= Math.pow(0.94, dt * 60);
+      if (p.life <= 0) particles.splice(i, 1);
+    }
+  }
+
+  function drawParticles() {
+    for (const p of particles) {
+      ctx.globalAlpha = Math.max(0, p.life) * 0.85;
+      ctx.fillStyle   = p.gold ? '#C9A84C' : '#ffffff';
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r * Math.max(0.1, p.life), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawBackground() {
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, W, H);
+
+    if (holding) {
+      const g = ctx.createRadialGradient(CX, CY, 0, CX, CY, 280);
+      g.addColorStop(0, 'rgba(201,168,76,0.09)');
+      g.addColorStop(1, 'rgba(201,168,76,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    } else {
+      const p = 0.5 + 0.5 * Math.sin(pulsePhase);
+      const g = ctx.createRadialGradient(CX, CY, 0, CX, CY, 220);
+      g.addColorStop(0, `rgba(230,57,70,${0.045 * p})`);
+      g.addColorStop(1, 'rgba(230,57,70,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    ctx.save();
+    ctx.translate(CX, CY);
+    ctx.rotate(gridAngle);
+    const ga = holding ? 0.065 : 0.028;
+    ctx.strokeStyle = `rgba(201,168,76,${ga})`;
+    ctx.lineWidth   = 0.6;
+    for (let i = 0; i < 12; i++) {
+      const a = (Math.PI * 2 / 12) * i;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * 500, Math.sin(a) * 500);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = `rgba(201,168,76,${ga * 0.5})`;
+    for (let r = 70; r <= 420; r += 80) {
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawFlame() {
+    const flicker = 0.5 + 0.5 * Math.sin(flamePhase);
+    const baseR   = holding ? 28 + flicker * 7 : 22 + flicker * 3;
+
+    if (holding) {
+      const grd = ctx.createRadialGradient(CX, CY - 5, 2, CX, CY, baseR * 3.2);
+      grd.addColorStop(0,   'rgba(201,168,76,0.5)');
+      grd.addColorStop(0.4, 'rgba(201,168,76,0.15)');
+      grd.addColorStop(1,   'rgba(201,168,76,0)');
+      ctx.fillStyle = grd;
+      ctx.beginPath();
+      ctx.arc(CX, CY, baseR * 3.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const shieldR = 62 + Math.sin(shieldPhase) * 3;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(CX, CY, shieldR, 0, Math.PI * 2);
+    if (holding) {
+      ctx.strokeStyle = `rgba(201,168,76,${0.5 + 0.2 * flicker})`;
+      ctx.lineWidth   = 1.8;
+      ctx.stroke();
+      ctx.save();
+      ctx.setLineDash([8, 10]);
+      ctx.lineDashOffset = -shieldPhase * 28;
+      ctx.strokeStyle    = `rgba(255,255,255,${0.1 * flicker})`;
+      ctx.lineWidth      = 1;
+      ctx.beginPath();
+      ctx.arc(CX, CY, shieldR + 8, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    } else {
+      ctx.strokeStyle = 'rgba(201,168,76,0.1)';
+      ctx.lineWidth   = 1;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    ctx.save();
+    ctx.translate(CX, CY);
+
+    const mainColor = holding
+      ? `rgba(201,168,76,${0.88 + 0.12 * flicker})`
+      : `rgba(180,55,55,${0.65 + 0.1 * flicker})`;
+
+    ctx.beginPath();
+    ctx.arc(0, baseR * 0.28, baseR * 0.62, 0, Math.PI * 2);
+    ctx.fillStyle = mainColor;
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(-baseR * 0.52, baseR * 0.32);
+    ctx.quadraticCurveTo(-baseR * 0.72, -baseR * 0.28, 0, -(baseR * 1.15 + flicker * 5));
+    ctx.quadraticCurveTo( baseR * 0.72, -baseR * 0.28, baseR * 0.52, baseR * 0.32);
+    ctx.closePath();
+    ctx.fillStyle = mainColor;
+    ctx.fill();
+
+    if (holding) {
+      const cg = ctx.createRadialGradient(0, baseR * 0.08, 0, 0, 0, baseR * 0.9);
+      cg.addColorStop(0,    'rgba(255,242,185,0.95)');
+      cg.addColorStop(0.45, 'rgba(201,168,76,0.55)');
+      cg.addColorStop(1,    'rgba(201,168,76,0)');
+      ctx.beginPath();
+      ctx.arc(0, baseR * 0.08, baseR * 0.9, 0, Math.PI * 2);
+      ctx.fillStyle = cg;
+      ctx.fill();
+    } else {
+      const cg = ctx.createRadialGradient(0, 0, 0, 0, 0, baseR * 0.55);
+      cg.addColorStop(0, 'rgba(230,120,70,0.55)');
+      cg.addColorStop(1, 'rgba(180,55,55,0)');
+      ctx.beginPath();
+      ctx.arc(0, 0, baseR * 0.55, 0, Math.PI * 2);
+      ctx.fillStyle = cg;
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawDistraction(d) {
+    const x = CX + Math.cos(d.angle) * d.curR;
+    const y = CY + Math.sin(d.angle) * d.curR;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(d.angle + Math.PI / 2);
+    const w2 = d.w / 2, h2 = d.h / 2;
+    ctx.fillStyle   = 'rgba(8,8,8,0.88)';
+    ctx.fillRect(-w2, -h2, d.w, d.h);
+    ctx.strokeStyle = d.color;
+    ctx.lineWidth   = 1;
+    ctx.strokeRect(-w2, -h2, d.w, d.h);
+    ctx.fillStyle      = d.color;
+    ctx.font           = '700 7.5px Outfit, sans-serif';
+    ctx.textAlign      = 'center';
+    ctx.textBaseline   = 'middle';
+    ctx.fillText(d.label, 0, 0.5);
+    ctx.restore();
+  }
+
+  function heartPath(cx, cy, size) {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy + size * 0.32);
+    ctx.bezierCurveTo(cx, cy + size * 0.05, cx - size * 0.52, cy - size * 0.38, cx, cy - size * 0.58);
+    ctx.bezierCurveTo(cx + size * 0.52, cy - size * 0.38, cx, cy + size * 0.05, cx, cy + size * 0.32);
+  }
+
+  function drawFocusHearts() {
+    const startX = W - 20;
+    const y = 26, size = 10;
+    for (let i = 0; i < MAX_LIVES; i++) {
+      heartPath(startX - i * 26, y, size);
+      if (i < focusPoints) {
+        ctx.fillStyle = '#E63946';
+        ctx.fill();
+      } else {
+        ctx.strokeStyle = '#2a2a2a';
+        ctx.lineWidth   = 1.5;
+        ctx.stroke();
+      }
+    }
+  }
+
+  function triggerFlash()   { flashTimer = FLASH_DUR; }
+  function triggerShake(m, d) { shakeMag = m; shakeDur = d; }
+
+  function updateFlash(dtMs) {
+    if (flashTimer > 0) {
+      flashTimer = Math.max(0, flashTimer - dtMs);
+      flashEl.style.background = `rgba(230,57,70,${(flashTimer / FLASH_DUR) * 0.38})`;
+    }
+  }
+
+  function updateShake(dtMs) {
+    if (shakeDur > 0) {
+      shakeDur -= dtMs;
+      const t = Math.max(0, shakeDur) / 280;
+      shakeX = (Math.random() * 2 - 1) * shakeMag * t;
+      shakeY = (Math.random() * 2 - 1) * shakeMag * t;
+    } else { shakeX = shakeY = 0; }
+  }
+
+  function showOverlay(el) {
+    el.classList.add('visible');
+    requestAnimationFrame(() => el.classList.add('shown'));
+  }
+
+  function hideOverlay(el) {
+    el.classList.remove('shown');
+    el.addEventListener('transitionend', function h() {
+      el.classList.remove('visible');
+      el.removeEventListener('transitionend', h);
+    });
+  }
+
+  function startGame() {
+    state        = 'playing';
+    holding = hMouse = hTouch = hSpace = false;
+    survivalTime = 0;
+    spawnTimer   = 0;
+    focusPoints  = MAX_LIVES;
+    flashTimer   = 0;
+    flashEl.style.background = 'rgba(230,57,70,0)';
+    particles    = [];
+    lastTs       = null;
+    initDistractions();
+    hideOverlay(startScreen);
+    hideOverlay(goScreen);
+    requestAnimationFrame(loop);
+  }
+
+  function loseLife() {
+    focusPoints--;
+    triggerFlash();
+    triggerShake(9, 280);
+    if (focusPoints <= 0) { focusPoints = 0; endGame(); }
+  }
+
+  function endGame() {
+    state = 'over';
+    const s  = Math.floor(survivalTime);
+    const ht = HEART_TYPES.find(h => s >= h.min && s <= h.max);
+    goScoreEl.textContent = s;
+    goHeartEl.textContent = ht.title;
+    goTagEl.textContent   = ht.tag;
+    if (s > best) {
+      best = s;
+      localStorage.setItem('dvd_best', best);
+      bestDisplay.textContent = best;
+    }
+    goBestEl.textContent = best;
+    showOverlay(goScreen);
+  }
+
+  function loop(ts) {
+    if (state !== 'playing') return;
+    if (!lastTs) lastTs = ts;
+    const dtMs = Math.min(ts - lastTs, 80);
+    const dt   = dtMs / 1000;
+    lastTs     = ts;
+
+    holding = hMouse || hTouch || hSpace;
+
+    survivalTime += dt;
+    gridAngle    += dt * (holding ? 0.07 : 0.20);
+    flamePhase   += dt * (holding ? 7   : 3.5);
+    shieldPhase  += dt * 2.8;
+    pulsePhase   += dt * 2.2;
+
+    spawnTimer += dt;
+    if (spawnTimer >= SPAWN_EVERY) {
+      spawnTimer -= SPAWN_EVERY;
+      distractions.push(makeDistraction(distractions.length));
+    }
+
+    for (const d of distractions) {
+      d.angle += d.angSpeed * dt;
+      if (holding) {
+        const diff = d.orbitR - d.curR;
+        d.curR += diff * Math.min(dt * 3, 1);
+      } else {
+        d.curR -= RUSH_SPEED * dt;
+      }
+      if (d.curR < 0) d.curR = 0;
+      if (d.curR < HIT_RADIUS) {
+        d.curR = d.orbitR;
+        loseLife();
+        if (state !== 'playing') break;
+      }
+    }
+
+    if (holding && Math.random() < 0.45) emitParticles();
+    updateParticles(dt);
+    updateFlash(dtMs);
+    updateShake(dtMs);
+
+    ctx.save();
+    ctx.scale(scale, scale);
+    ctx.translate(shakeX, shakeY);
+    drawBackground();
+    drawParticles();
+    distractions.forEach(drawDistraction);
+    drawFlame();
+    drawFocusHearts();
+    ctx.restore();
+
+    headerScore.textContent = Math.floor(survivalTime);
+    requestAnimationFrame(loop);
+  }
+
+  let idlePhase = 0, idleActive = true;
+
+  function idleLoop(ts) {
+    if (!idleActive || state === 'playing') return;
+    idlePhase   += 0.016;
+    gridAngle   += 0.0006;
+    flamePhase  += 0.055;
+    shieldPhase += 0.028;
+    pulsePhase  += 0.02;
+
+    ctx.save();
+    ctx.scale(scale, scale);
+    drawBackground();
+    for (let i = 0; i < 5; i++) {
+      const a  = (Math.PI * 2 / 5) * i + idlePhase * 0.25;
+      const rx = CX + Math.cos(a) * 210;
+      const ry = CY + Math.sin(a) * 210;
+      ctx.beginPath();
+      ctx.arc(rx, ry, 4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(201,168,76,0.28)';
+      ctx.fill();
+    }
+    drawFlame();
+    ctx.restore();
+
+    requestAnimationFrame(idleLoop);
+  }
+  requestAnimationFrame(idleLoop);
+
+  function syncHold() { holding = hMouse || hTouch || hSpace; }
+
+  canvas.addEventListener('mousedown', e => {
+    e.preventDefault();
+    if (state === 'idle')    { startGame(); return; }
+    if (state === 'playing') { hMouse = true; syncHold(); }
+  });
+  document.addEventListener('mouseup', () => { hMouse = false; syncHold(); });
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (state === 'idle')    { startGame(); return; }
+    if (state === 'playing') { hTouch = true; syncHold(); }
+  }, { passive: false });
+  document.addEventListener('touchend',    () => { hTouch = false; syncHold(); });
+  document.addEventListener('touchcancel', () => { hTouch = false; syncHold(); });
+
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      if (state === 'idle')    { startGame(); return; }
+      if (state === 'playing') { hSpace = true; syncHold(); }
+    }
+  });
+  document.addEventListener('keyup', e => {
+    if (e.code === 'Space') { hSpace = false; syncHold(); }
+  });
+
+  tapBtn.addEventListener('click', () => { if (state === 'idle') startGame(); });
+  tapBtn.addEventListener('touchstart', e => {
+    e.preventDefault();
+    if (state === 'idle') startGame();
+  }, { passive: false });
+
+  playAgainBtn.addEventListener('click', () => {
+    idleActive = true;
+    state = 'idle';
+    hideOverlay(goScreen);
+    setTimeout(() => showOverlay(startScreen), 320);
+    setTimeout(() => requestAnimationFrame(idleLoop), 340);
+  });
+
+  showOverlay(startScreen);
+})();
+</script>
+</body>
+</html>

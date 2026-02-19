@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Heart Don't Fold — Trial 03</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:    #0a0a0a;
+      --red:   #E63946;
+      --white: #FFFFFF;
+      --gold:  #C9A84C;
+      --gray:  #888888;
+      --header-h: 56px;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Outfit', sans-serif;
+      overflow: hidden;
+    }
+
+    header {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: var(--header-h);
+      background: #0d0d0d;
+      border-bottom: 1px solid rgba(230,57,70,.35);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px;
+      z-index: 100;
+    }
+    .back-link {
+      font-family: 'Outfit', sans-serif;
+      font-size: 11px; font-weight: 600; letter-spacing: .12em;
+      color: var(--gray); text-decoration: none;
+      transition: color .2s;
+    }
+    .back-link:hover { color: var(--red); }
+    .game-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px; letter-spacing: .1em;
+      color: var(--white);
+    }
+    .score-display {
+      font-family: 'Outfit', sans-serif;
+      font-size: 12px; font-weight: 600; letter-spacing: .1em;
+      color: var(--gold);
+      min-width: 80px; text-align: right;
+    }
+
+    #gameWrap {
+      position: fixed;
+      top: var(--header-h); left: 0; right: 0; bottom: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+    }
+    #gameCanvas {
+      display: block;
+      image-rendering: crisp-edges;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a href="/" class="back-link">&#8592; PUTYAHEARTINIT</a>
+  <div class="game-title">HEART DON'T FOLD</div>
+  <div class="score-display">SCORE: <span id="scoreVal">0</span>s</div>
+</header>
+
+<div id="gameWrap">
+  <canvas id="gameCanvas"></canvas>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const W = 600, H = 600;
+  const PLAYER_SPEED = 180;
+  const BASE_PROJ_SPEED = 120;
+  const SPEED_INC_INTERVAL = 15;
+  const SPEED_INC_AMOUNT = 5;
+  const MAX_PROJECTILES_ACTIVE = 8;
+  const SHIELD_COUNT = 3;
+  const HIT_RADIUS = 28;
+  const INVINCIBLE_DURATION = 0.8;
+  const HEART_HALF = 22;
+  const PROJ_W = 60, PROJ_H = 18;
+
+  const LABELS = ["DOUBT","DISTRACTION","FEAR","NOISE","HATER","ENVY","EXCUSES","LIMITS"];
+
+  const COLOR_BG    = '#0a0a0a';
+  const COLOR_RED   = '#E63946';
+  const COLOR_WHITE = '#FFFFFF';
+  const COLOR_GOLD  = '#C9A84C';
+  const COLOR_GRAY  = '#888888';
+
+  const HEART_TYPES = [
+    { minS: 0,  maxS: 14,  name: "THE SURVIVOR",   desc: "You kept going. That's already rare." },
+    { minS: 15, maxS: 44,  name: "THE WARRIOR",    desc: "You fight through. The world needs fighters." },
+    { minS: 45, maxS: 89,  name: "THE CREATOR",    desc: "You find ways when there are none." },
+    { minS: 90, maxS: Infinity, name: "THE VISIONARY", desc: "Your ceiling is the sky." },
+  ];
+
+  const LS_BEST = 'hdf_best';
+
+  const canvas  = document.getElementById('gameCanvas');
+  const ctx     = canvas.getContext('2d');
+  const wrap    = document.getElementById('gameWrap');
+  const scoreEl = document.getElementById('scoreVal');
+
+  let scale = 1;
+  function resize() {
+    const ww = wrap.clientWidth, wh = wrap.clientHeight;
+    scale = Math.min(ww / W, wh / H);
+    canvas.width  = W;
+    canvas.height = H;
+    canvas.style.width  = (W * scale) + 'px';
+    canvas.style.height = (H * scale) + 'px';
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  let state = 'start';
+  let player = { x: W/2, y: H/2 };
+  let shields = SHIELD_COUNT;
+  let invincibleTimer = 0;
+  let survivalTime = 0;
+  let projectiles = [];
+  let spawnTimer = 0;
+  let spawnInterval = 2.0;
+  let maxActive = 2;
+  let flashTimer = 0;
+  let gridPulse = 0;
+  let keys = {};
+  let touch = null;
+  let pulseT = 0;
+
+  let goBtn  = { x: 0, y: 0, w: 0, h: 0 };
+  let quizBtn = { x: 0, y: 0, w: 0, h: 0 };
+  let goHoverPlay = false, goHoverQuiz = false;
+
+  function getBest() { return parseInt(localStorage.getItem(LS_BEST) || '0', 10); }
+  function saveBest(s) { if (s > getBest()) localStorage.setItem(LS_BEST, String(s)); }
+  function getHeartType(s) { return HEART_TYPES.find(h => s >= h.minS && s <= h.maxS) || HEART_TYPES[0]; }
+
+  function resetGame() {
+    player = { x: W/2, y: H/2 };
+    shields = SHIELD_COUNT;
+    invincibleTimer = 0;
+    survivalTime = 0;
+    projectiles = [];
+    spawnTimer = 0;
+    spawnInterval = 2.0;
+    maxActive = 2;
+    flashTimer = 0;
+    keys = {};
+    touch = null;
+    scoreEl.textContent = '0';
+  }
+
+  function spawnProjectile() {
+    const edge = Math.floor(Math.random() * 4);
+    let sx, sy;
+    if (edge === 0)      { sx = Math.random() * W; sy = -PROJ_H; }
+    else if (edge === 1) { sx = Math.random() * W; sy = H + PROJ_H; }
+    else if (edge === 2) { sx = -PROJ_W; sy = Math.random() * H; }
+    else                 { sx = W + PROJ_W; sy = Math.random() * H; }
+
+    const dx = player.x - sx, dy = player.y - sy;
+    const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+    const speed = BASE_PROJ_SPEED + Math.floor(survivalTime / SPEED_INC_INTERVAL) * SPEED_INC_AMOUNT;
+
+    projectiles.push({
+      x: sx, y: sy,
+      vx: (dx / dist) * speed,
+      vy: (dy / dist) * speed,
+      label: LABELS[Math.floor(Math.random() * LABELS.length)],
+      rot: (Math.random() * 30 - 15) * Math.PI / 180,
+      speed,
+    });
+  }
+
+  window.addEventListener('keydown', e => {
+    keys[e.key] = true;
+    if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+    if (state === 'start'    && (e.key === ' ' || e.key === 'Enter')) startGame();
+    if (state === 'gameover' && (e.key === ' ' || e.key === 'Enter')) startGame();
+  });
+  window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    touch = {
+      x: (t.clientX - rect.left) / scale,
+      y: (t.clientY - rect.top)  / scale,
+    };
+    if (state === 'start') { startGame(); return; }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!touch || state !== 'playing') return;
+    const t = e.touches[0];
+    const rect = canvas.getBoundingClientRect();
+    const cx = (t.clientX - rect.left) / scale;
+    const cy = (t.clientY - rect.top)  / scale;
+    player.x = Math.max(HEART_HALF, Math.min(W - HEART_HALF, player.x + (cx - touch.x)));
+    player.y = Math.max(HEART_HALF, Math.min(H - HEART_HALF, player.y + (cy - touch.y)));
+    touch.x = cx; touch.y = cy;
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', e => {
+    e.preventDefault();
+    if (state === 'gameover') {
+      const t = e.changedTouches[0];
+      const rect = canvas.getBoundingClientRect();
+      const cx = (t.clientX - rect.left) / scale;
+      const cy = (t.clientY - rect.top)  / scale;
+      if (cx >= goBtn.x && cx <= goBtn.x + goBtn.w && cy >= goBtn.y && cy <= goBtn.y + goBtn.h) { startGame(); return; }
+      if (cx >= quizBtn.x && cx <= quizBtn.x + quizBtn.w && cy >= quizBtn.y && cy <= quizBtn.y + quizBtn.h) { window.location.href = '/#quiz'; return; }
+    }
+    touch = null;
+  }, { passive: false });
+
+  canvas.addEventListener('mousemove', e => {
+    if (state !== 'gameover') { canvas.style.cursor = 'default'; return; }
+    const rect = canvas.getBoundingClientRect();
+    const cx = (e.clientX - rect.left) / scale;
+    const cy = (e.clientY - rect.top)  / scale;
+    goHoverPlay = cx >= goBtn.x && cx <= goBtn.x + goBtn.w && cy >= goBtn.y && cy <= goBtn.y + goBtn.h;
+    goHoverQuiz = cx >= quizBtn.x && cx <= quizBtn.x + quizBtn.w && cy >= quizBtn.y && cy <= quizBtn.y + quizBtn.h;
+    canvas.style.cursor = (goHoverPlay || goHoverQuiz) ? 'pointer' : 'default';
+  });
+
+  canvas.addEventListener('click', e => {
+    if (state === 'start') { startGame(); return; }
+    if (state !== 'gameover') return;
+    const rect = canvas.getBoundingClientRect();
+    const cx = (e.clientX - rect.left) / scale;
+    const cy = (e.clientY - rect.top)  / scale;
+    if (cx >= goBtn.x && cx <= goBtn.x + goBtn.w && cy >= goBtn.y && cy <= goBtn.y + goBtn.h) { startGame(); return; }
+    if (cx >= quizBtn.x && cx <= quizBtn.x + quizBtn.w && cy >= quizBtn.y && cy <= quizBtn.y + quizBtn.h) { window.location.href = '/#quiz'; }
+  });
+
+  function startGame() { resetGame(); state = 'playing'; }
+
+  function update(dt) {
+    if (state !== 'playing') return;
+
+    survivalTime += dt;
+    scoreEl.textContent = Math.floor(survivalTime);
+
+    if (flashTimer > 0) flashTimer -= dt;
+    if (invincibleTimer > 0) invincibleTimer -= dt;
+    gridPulse += dt * 0.4;
+
+    let mx = 0, my = 0;
+    if (keys['ArrowLeft']  || keys['a'] || keys['A']) mx -= 1;
+    if (keys['ArrowRight'] || keys['d'] || keys['D']) mx += 1;
+    if (keys['ArrowUp']    || keys['w'] || keys['W']) my -= 1;
+    if (keys['ArrowDown']  || keys['s'] || keys['S']) my += 1;
+    if (mx !== 0 || my !== 0) {
+      const len = Math.sqrt(mx*mx + my*my);
+      player.x += (mx/len) * PLAYER_SPEED * dt;
+      player.y += (my/len) * PLAYER_SPEED * dt;
+    }
+    player.x = Math.max(HEART_HALF, Math.min(W - HEART_HALF, player.x));
+    player.y = Math.max(HEART_HALF, Math.min(H - HEART_HALF, player.y));
+
+    if (survivalTime >= 60) spawnInterval = 1.0;
+    else if (survivalTime >= 30) spawnInterval = 1.4;
+    else spawnInterval = 2.0;
+    maxActive = Math.min(MAX_PROJECTILES_ACTIVE, 2 + Math.floor(survivalTime / 20));
+
+    spawnTimer += dt;
+    if (spawnTimer >= spawnInterval && projectiles.length < maxActive) {
+      spawnProjectile();
+      spawnTimer = 0;
+    }
+
+    for (let i = projectiles.length - 1; i >= 0; i--) {
+      const p = projectiles[i];
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      if (p.x < -120 || p.x > W + 120 || p.y < -120 || p.y > H + 120) {
+        projectiles.splice(i, 1);
+      }
+    }
+
+    if (invincibleTimer <= 0) {
+      for (let i = 0; i < projectiles.length; i++) {
+        const p = projectiles[i];
+        const dx = player.x - p.x, dy = player.y - p.y;
+        if (Math.sqrt(dx*dx + dy*dy) < HIT_RADIUS) {
+          shields--;
+          invincibleTimer = INVINCIBLE_DURATION;
+          flashTimer = 0.25;
+          projectiles.splice(i, 1);
+          if (shields <= 0) {
+            saveBest(Math.floor(survivalTime));
+            state = 'gameover';
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  function drawHeart(x, y, size, color, glowColor, glowAlpha) {
+    ctx.save();
+    ctx.translate(x, y);
+    if (glowColor && glowAlpha > 0) { ctx.shadowColor = glowColor; ctx.shadowBlur = 18 * glowAlpha; }
+    ctx.beginPath();
+    ctx.moveTo(0, size * 0.35);
+    ctx.bezierCurveTo(-size, -size * 0.1, -size, -size * 0.7, 0, -size * 0.35);
+    ctx.bezierCurveTo( size, -size * 0.7,  size, -size * 0.1, 0,  size * 0.35);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+
+  function drawGrid(pulse) {
+    const alpha = 0.03 + 0.015 * Math.sin(pulse * Math.PI * 2);
+    ctx.save();
+    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+    ctx.lineWidth = 0.5;
+    for (let x = 0; x <= W; x += 20) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let y = 0; y <= H; y += 20) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+    ctx.restore();
+  }
+
+  function drawProjectile(p) {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.beginPath();
+    ctx.roundRect(-PROJ_W/2, -PROJ_H/2, PROJ_W, PROJ_H, 3);
+    ctx.fillStyle = '#1a0204';
+    ctx.fill();
+    ctx.strokeStyle = COLOR_RED;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.fillStyle = COLOR_WHITE;
+    ctx.font = "bold 9px 'Outfit', sans-serif";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(p.label, 0, 0);
+    ctx.restore();
+  }
+
+  function drawGoldAura(x, y, seconds) {
+    const rings = Math.floor(seconds / 30) + 1;
+    ctx.save();
+    for (let r = 0; r < rings; r++) {
+      const alpha = 0.18 - r * 0.04;
+      if (alpha <= 0) break;
+      ctx.beginPath();
+      ctx.arc(x, y, HEART_HALF + 8 + r * 10, 0, Math.PI * 2);
+      ctx.strokeStyle = `rgba(201,168,76,${alpha})`;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawShieldIcon(x, y, active) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    if (active) {
+      ctx.strokeStyle = COLOR_WHITE; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.15)'; ctx.fill();
+    } else {
+      ctx.strokeStyle = 'rgba(230,57,70,0.6)'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = 'rgba(230,57,70,0.12)'; ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawStartScreen(dt) {
+    pulseT += dt;
+    ctx.fillStyle = COLOR_BG;
+    ctx.fillRect(0, 0, W, H);
+    drawGrid(gridPulse);
+    gridPulse += dt * 0.4;
+
+    drawHeart(W/2, H/2 - 40, HEART_HALF * 2.5, 'rgba(255,255,255,0.05)', null, 0);
+
+    ctx.save();
+    ctx.font = "52px 'Bebas Neue', sans-serif";
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = COLOR_WHITE;
+    ctx.shadowColor = 'rgba(255,255,255,0.3)'; ctx.shadowBlur = 20;
+    ctx.fillText("HEART DON'T FOLD", W/2, H/2 - 80);
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = "11px 'Outfit', sans-serif";
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = COLOR_RED;
+    ctx.fillText("TRIAL 03 — RESILIENCE", W/2, H/2 - 42);
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(230,57,70,0.35)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(W/2 - 90, H/2 - 22); ctx.lineTo(W/2 + 90, H/2 - 22); ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = "13px 'Outfit', sans-serif";
+    ctx.textAlign = 'center'; ctx.fillStyle = COLOR_GRAY;
+    ctx.fillText("DODGE everything. 3 hits and you're done.", W/2, H/2 + 8);
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = "11px 'Outfit', sans-serif";
+    ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(136,136,136,0.55)';
+    ctx.fillText("Arrow Keys / WASD / Swipe to move", W/2, H/2 + 36);
+    ctx.restore();
+
+    const blink = 0.65 + 0.35 * Math.sin(pulseT * 4);
+    ctx.save();
+    ctx.font = "bold 20px 'Bebas Neue', sans-serif";
+    ctx.textAlign = 'center'; ctx.fillStyle = `rgba(230,57,70,${blink})`;
+    ctx.fillText("TAP TO BEGIN", W/2, H/2 + 86);
+    ctx.restore();
+
+    const best = getBest();
+    if (best > 0) {
+      ctx.save();
+      ctx.font = "11px 'Outfit', sans-serif";
+      ctx.textAlign = 'center'; ctx.fillStyle = COLOR_GOLD;
+      ctx.fillText("BEST: " + best + "s", W/2, H/2 + 116);
+      ctx.restore();
+    }
+  }
+
+  function drawGame() {
+    ctx.fillStyle = COLOR_BG;
+    ctx.fillRect(0, 0, W, H);
+    drawGrid(gridPulse);
+
+    if (flashTimer > 0) {
+      ctx.fillStyle = `rgba(230,57,70,${Math.min(0.28, flashTimer * 1.1)})`;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    for (const p of projectiles) drawProjectile(p);
+    drawGoldAura(player.x, player.y, survivalTime);
+
+    const showHeart = invincibleTimer <= 0 || Math.floor(invincibleTimer * 10) % 2 === 0;
+    if (showHeart) {
+      const glow = Math.min(1, 0.4 + survivalTime / 120);
+      drawHeart(player.x, player.y, HEART_HALF, COLOR_WHITE, COLOR_WHITE, glow);
+    }
+
+    const sy = H - 24;
+    for (let i = 0; i < SHIELD_COUNT; i++) drawShieldIcon(24 + i * 22, sy, i < shields);
+    ctx.save();
+    ctx.font = "9px 'Outfit', sans-serif"; ctx.fillStyle = 'rgba(136,136,136,0.65)';
+    ctx.textAlign = 'left'; ctx.fillText("SHIELDS", 16, sy - 13);
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = "28px 'Bebas Neue', sans-serif";
+    ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+    ctx.fillStyle = COLOR_GOLD; ctx.shadowColor = COLOR_GOLD; ctx.shadowBlur = 10;
+    ctx.fillText(Math.floor(survivalTime) + 's', W - 18, H - 10);
+    ctx.restore();
+  }
+
+  function drawGameOver(dt) {
+    pulseT += dt;
+    ctx.fillStyle = 'rgba(10,10,10,0.95)';
+    ctx.fillRect(0, 0, W, H);
+    drawGrid(gridPulse);
+
+    const finalScore = Math.floor(survivalTime);
+    const best = getBest();
+    const ht = getHeartType(finalScore);
+    const isNewBest = finalScore >= best && finalScore > 0;
+
+    ctx.save();
+    ctx.font = "44px 'Bebas Neue', sans-serif";
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = COLOR_WHITE;
+    ctx.shadowColor = 'rgba(255,255,255,0.2)'; ctx.shadowBlur = 16;
+    ctx.fillText(ht.name, W/2, H/2 - 148);
+    ctx.restore();
+
+    ctx.save();
+    ctx.strokeStyle = COLOR_RED; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(W/2 - 100, H/2 - 122); ctx.lineTo(W/2 + 100, H/2 - 122); ctx.stroke();
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = "13px 'Outfit', sans-serif";
+    ctx.textAlign = 'center'; ctx.fillStyle = COLOR_GRAY;
+    ctx.fillText('\u201c' + ht.desc + '\u201d', W/2, H/2 - 98);
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = "72px 'Bebas Neue', sans-serif";
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = COLOR_GOLD; ctx.shadowColor = COLOR_GOLD; ctx.shadowBlur = 22;
+    ctx.fillText(finalScore + 's', W/2, H/2 - 28);
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = "11px 'Outfit', sans-serif";
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = COLOR_GRAY;
+    ctx.fillText("SURVIVED", W/2, H/2 + 8);
+    ctx.restore();
+
+    if (isNewBest) {
+      ctx.save();
+      ctx.font = "bold 11px 'Outfit', sans-serif";
+      ctx.textAlign = 'center'; ctx.fillStyle = COLOR_GOLD;
+      ctx.fillText("NEW BEST  \u2605", W/2, H/2 + 30);
+      ctx.restore();
+    } else if (best > 0) {
+      ctx.save();
+      ctx.font = "11px 'Outfit', sans-serif";
+      ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(136,136,136,0.6)';
+      ctx.fillText("BEST: " + best + "s", W/2, H/2 + 30);
+      ctx.restore();
+    }
+
+    const btnW = 180, btnH = 44;
+    const btnX = W/2 - btnW/2, btnY = H/2 + 55;
+    goBtn = { x: btnX, y: btnY, w: btnW, h: btnH };
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(btnX, btnY, btnW, btnH, 4);
+    ctx.fillStyle = goHoverPlay ? '#ff4b58' : COLOR_RED;
+    ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.font = "20px 'Bebas Neue', sans-serif";
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = COLOR_WHITE;
+    ctx.fillText("PLAY AGAIN", W/2, btnY + btnH/2);
+    ctx.restore();
+
+    const qY = btnY + btnH + 26;
+    quizBtn = { x: W/2 - 110, y: qY - 14, w: 220, h: 22 };
+    ctx.save();
+    ctx.font = "12px 'Outfit', sans-serif";
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = goHoverQuiz ? COLOR_WHITE : COLOR_GRAY;
+    ctx.fillText("TAKE THE FULL QUIZ \u2192", W/2, qY);
+    ctx.restore();
+  }
+
+  let lastTime = null;
+  function loop(ts) {
+    if (lastTime === null) lastTime = ts;
+    const dt = Math.min((ts - lastTime) / 1000, 0.05);
+    lastTime = ts;
+    update(dt);
+    if      (state === 'start')    drawStartScreen(dt);
+    else if (state === 'playing')  drawGame();
+    else if (state === 'gameover') drawGameOver(dt);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>

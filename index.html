@@ -353,6 +353,25 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 .drop-name{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--white);margin-bottom:4px}
 .drop-desc{font-size:13px;font-weight:300;color:var(--gray);line-height:1.7}
 
+/* ═══ PYHI GAMES ═══ */
+.games-sec{padding:120px 0;background:var(--black);border-top:1px solid rgba(255,255,255,0.04);position:relative;overflow:hidden}
+.games-sec::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 80%,rgba(230,57,70,0.05) 0%,transparent 60%);pointer-events:none}
+.games-intro{text-align:center;margin-bottom:64px}
+.games-sub{font-size:14px;font-weight:300;color:var(--gray);max-width:480px;margin:12px auto 0;line-height:1.8;letter-spacing:0.5px}
+.games-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;max-width:900px;margin:0 auto}
+.game-card{display:block;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);padding:36px 32px;text-decoration:none;position:relative;overflow:hidden;transition:border-color 0.3s,transform 0.3s,background 0.3s}
+.game-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform 0.35s cubic-bezier(0.22,1,0.36,1)}
+.game-card:hover{border-color:rgba(230,57,70,0.35);background:rgba(230,57,70,0.04);transform:translateY(-4px)}
+.game-card:hover::before{transform:scaleX(1)}
+.game-card-icon{font-size:32px;margin-bottom:20px;opacity:0.7;line-height:1}
+.game-card-trial{font-size:9px;font-weight:600;letter-spacing:5px;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.game-card-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,3vw,34px);letter-spacing:3px;color:var(--white);line-height:1;margin-bottom:8px}
+.game-card-skill{font-size:10px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--red);margin-bottom:14px;opacity:0.8}
+.game-card-desc{font-size:13px;font-weight:300;color:var(--gray);line-height:1.7;margin-bottom:24px}
+.game-card-play{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--white);display:inline-flex;align-items:center;gap:8px;transition:gap 0.3s}
+.game-card:hover .game-card-play{gap:14px;color:var(--red)}
+@media(max-width:640px){.games-grid{grid-template-columns:1fr}.game-card{padding:28px 24px}}
+
 /* ═══ FUTURE VISION ROADMAP ═══ */
 .vision-sec{padding:140px 0;background:var(--black);border-top:1px solid rgba(255,255,255,0.04);position:relative;overflow:hidden}
 .vision-sec::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(230,57,70,0.04) 0%,transparent 70%);pointer-events:none}
@@ -719,6 +738,7 @@ body { padding-bottom: 72px; }
  <a href="#nil" onclick="closeMenu()">NIL</a>
  <a href="#music" onclick="closeMenu()">Music</a>
  <a href="#quiz" onclick="closeMenu()">Quiz</a>
+ <a href="#games" onclick="closeMenu()">Games</a>
  <a href="#vision" onclick="closeMenu()">Vision</a>
  <a href="#book" onclick="closeMenu()">The Book</a>
  <a href="#about" onclick="closeMenu()">About</a>
@@ -735,6 +755,7 @@ body { padding-bottom: 72px; }
  <li><a href="#nil">NIL</a></li>
  <li><a href="#music">Music</a></li>
  <li><a href="#quiz">Quiz</a></li>
+ <li><a href="#games">Games</a></li>
  <li><a href="#vision">Vision</a></li>
  <li><a href="#book">The Book</a></li>
  <li><a href="#about">About</a></li>
@@ -2018,6 +2039,56 @@ body { padding-bottom: 72px; }
      </div>
 
    </div>
+ </div>
+</section>
+
+<!-- ═══ PYHI GAMES ═══ -->
+<section class="games-sec" id="games">
+ <div class="ctn">
+  <div class="games-intro rv">
+   <p class="sec-label">The Path Trials</p>
+   <div class="sec-heading">PYHI GAMES</div>
+   <p class="games-sub">Each game tests a different inner skill. Play. Grow. Find your heart type.</p>
+  </div>
+  <div class="games-grid">
+
+   <a href="/games/desire-flight.html" class="game-card rv">
+    <div class="game-card-icon">🔥</div>
+    <div class="game-card-trial">Trial 01</div>
+    <div class="game-card-name">DESIRE FLIGHT</div>
+    <div class="game-card-skill">Skill: Perseverance</div>
+    <div class="game-card-desc">Hold to rise. Release to fall. Keep your flame alive through the noise.</div>
+    <div class="game-card-play">PLAY NOW →</div>
+   </a>
+
+   <a href="/games/desire-vs-distractions.html" class="game-card rv">
+    <div class="game-card-icon">⚡</div>
+    <div class="game-card-trial">Trial 02</div>
+    <div class="game-card-name">DESIRE VS DISTRACTIONS</div>
+    <div class="game-card-skill">Skill: Focus</div>
+    <div class="game-card-desc">Hold your focus. The second you let go, the noise rushes in.</div>
+    <div class="game-card-play">PLAY NOW →</div>
+   </a>
+
+   <a href="/games/heart-dont-fold.html" class="game-card rv">
+    <div class="game-card-icon">♥</div>
+    <div class="game-card-trial">Trial 03</div>
+    <div class="game-card-name">HEART DON'T FOLD</div>
+    <div class="game-card-skill">Skill: Resilience</div>
+    <div class="game-card-desc">Doubt attacks from every direction. Three hits and you're done. Don't fold.</div>
+    <div class="game-card-play">PLAY NOW →</div>
+   </a>
+
+   <a href="/games/ascension-climb.html" class="game-card rv">
+    <div class="game-card-icon">▲</div>
+    <div class="game-card-trial">Trial 04</div>
+    <div class="game-card-name">ASCENSION CLIMB</div>
+    <div class="game-card-skill">Skill: Growth</div>
+    <div class="game-card-desc">Climb through the realms. Earth. Neon. Void. How high can you go?</div>
+    <div class="game-card-play">PLAY NOW →</div>
+   </a>
+
+  </div>
  </div>
 </section>
 
