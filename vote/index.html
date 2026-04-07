@@ -43,6 +43,125 @@
     opacity: 0.6;
   }
 
+  /* PASSWORD GATE */
+  .gate-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--black);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  .gate-overlay.unlocked { display: none; }
+  .gate-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 8vw, 72px);
+    letter-spacing: 4px;
+    color: var(--white);
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .gate-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  .gate-input {
+    width: 280px;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #1e1e1e;
+    color: var(--white);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    padding: 12px 0;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  .gate-input:focus { border-bottom-color: var(--red); }
+  .gate-input::placeholder {
+    color: #1e1e1e;
+    font-size: 14px;
+    letter-spacing: 6px;
+  }
+  .gate-enter {
+    margin-top: 24px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    letter-spacing: 6px;
+    padding: 14px 48px;
+    background: var(--red);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .gate-enter:hover { background: #c41020; }
+  .gate-error {
+    margin-top: 16px;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--red);
+    opacity: 0;
+    transition: opacity 0.3s;
+    text-transform: uppercase;
+  }
+  .gate-error.show { opacity: 1; }
+  .gate-hint {
+    margin-top: 24px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #1a1a1a;
+    text-transform: uppercase;
+  }
+
+  /* COUNTDOWN */
+  .countdown-bar {
+    max-width: 960px;
+    margin: 0 auto 24px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+  }
+  .countdown-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--red);
+  }
+  .countdown-units {
+    display: flex;
+    gap: 20px;
+  }
+  .countdown-unit {
+    text-align: center;
+  }
+  .countdown-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--white);
+    line-height: 1;
+  }
+  .countdown-lbl {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: #333;
+    text-transform: uppercase;
+  }
+
   /* TOP RED LINE */
   .redline { height: 3px; background: var(--red); width: 100%; }
 
@@ -623,6 +742,16 @@
 </head>
 <body>
 
+<!-- PASSWORD GATE -->
+<div class="gate-overlay" id="gate">
+  <div class="gate-title">PUTYAHEARTINIT</div>
+  <div class="gate-sub">Private Screening</div>
+  <input class="gate-input" id="gateCode" type="text" placeholder="Enter Code" autocomplete="off">
+  <button class="gate-enter" onclick="checkGate()">Enter</button>
+  <div class="gate-error" id="gateError">Wrong code</div>
+  <div class="gate-hint">Check your DMs for the code</div>
+</div>
+
 <div class="redline"></div>
 
 <nav>
@@ -646,6 +775,17 @@
 <div class="name-zone">
   <input type="text" id="voterName" placeholder="Drop Your Name" autocomplete="off" />
   <div class="hint">So Stevie knows who voted</div>
+</div>
+
+<!-- COUNTDOWN TIMER -->
+<div class="countdown-bar">
+  <span class="countdown-label">Voting Closes In</span>
+  <div class="countdown-units">
+    <div class="countdown-unit"><div class="countdown-num" id="cd-days">0</div><div class="countdown-lbl">Days</div></div>
+    <div class="countdown-unit"><div class="countdown-num" id="cd-hours">0</div><div class="countdown-lbl">Hours</div></div>
+    <div class="countdown-unit"><div class="countdown-num" id="cd-mins">0</div><div class="countdown-lbl">Min</div></div>
+    <div class="countdown-unit"><div class="countdown-num" id="cd-secs">0</div><div class="countdown-lbl">Sec</div></div>
+  </div>
 </div>
 
 <div class="live-row">
@@ -678,6 +818,67 @@
 
 <script>
 // ============================================
+// PASSWORD GATE
+// ============================================
+const ACCESS_CODE = 'westside';  // CHANGE THIS to your code
+const GATE_KEY = 'pyhi_gate_passed';
+
+function checkGate() {
+  const input = document.getElementById('gateCode');
+  const code = input.value.trim().toLowerCase();
+  if (code === ACCESS_CODE.toLowerCase()) {
+    document.getElementById('gate').classList.add('unlocked');
+    localStorage.setItem(GATE_KEY, 'true');
+  } else {
+    document.getElementById('gateError').classList.add('show');
+    input.value = '';
+    setTimeout(() => document.getElementById('gateError').classList.remove('show'), 2000);
+  }
+}
+
+// Enter key on gate input
+document.getElementById('gateCode').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') checkGate();
+});
+
+// Skip gate if already passed
+if (localStorage.getItem(GATE_KEY) === 'true') {
+  document.getElementById('gate').classList.add('unlocked');
+}
+
+// ============================================
+// COUNTDOWN TIMER
+// ============================================
+// SET YOUR CLOSE DATE HERE (year, month-1, day, hour)
+const CLOSE_DATE = new Date(2026, 3, 17, 23, 59, 59); // April 17, 2026 at 11:59pm
+
+function updateCountdown() {
+  const now = new Date();
+  const diff = CLOSE_DATE - now;
+
+  if (diff <= 0) {
+    document.getElementById('cd-days').textContent = '0';
+    document.getElementById('cd-hours').textContent = '0';
+    document.getElementById('cd-mins').textContent = '0';
+    document.getElementById('cd-secs').textContent = '0';
+    return;
+  }
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+  document.getElementById('cd-days').textContent = days;
+  document.getElementById('cd-hours').textContent = hours;
+  document.getElementById('cd-mins').textContent = mins < 10 ? '0' + mins : mins;
+  document.getElementById('cd-secs').textContent = secs < 10 ? '0' + secs : secs;
+}
+
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+// ============================================
 // TRACK DATA
 // ============================================
 const TRACKS = [
@@ -702,24 +903,25 @@ const audios = {};
 let animFrame = null;
 
 // ============================================
-// AUDIO — Pre-create elements
+// AUDIO — Create on demand (browser autoplay policy)
 // ============================================
-TRACKS.forEach((t, i) => {
-  const a = new Audio();
-  a.preload = 'none';
-  a.src = t.file;
-  a.addEventListener('ended', () => {
-    playing = null;
-    updatePlayButtons();
-  });
-  audios[i] = a;
-});
+function getAudio(i) {
+  if (!audios[i]) {
+    const a = new Audio(TRACKS[i].file);
+    a.addEventListener('ended', () => {
+      playing = null;
+      updatePlayButtons();
+    });
+    audios[i] = a;
+  }
+  return audios[i];
+}
 
 // Progress animation loop — runs independently of render
 function startProgressLoop() {
   function tick() {
     if (playing !== null) {
-      const a = audios[playing];
+      const a = getAudio(playing);
       const pf = document.getElementById('pf-' + playing);
       const tl = document.getElementById('tl-' + playing);
       if (pf && a.duration) {
@@ -881,7 +1083,7 @@ function render() {
     // Progress bar seek
     card.querySelector('.progress-track').addEventListener('click', (e) => {
       e.stopPropagation();
-      const a = audios[i];
+      const a = getAudio(i);
       if (a.duration) {
         const rect = e.currentTarget.getBoundingClientRect();
         const pct = (e.clientX - rect.left) / rect.width;
@@ -932,8 +1134,10 @@ function pick(i) {
 }
 
 function togglePlay(i) {
+  const audio = getAudio(i);
+
   if (playing === i) {
-    audios[i].pause();
+    audio.pause();
     playing = null;
     updatePlayButtons();
     return;
@@ -941,8 +1145,9 @@ function togglePlay(i) {
 
   // Stop previous
   if (playing !== null) {
-    audios[playing].pause();
-    audios[playing].currentTime = 0;
+    const prev = getAudio(playing);
+    prev.pause();
+    prev.currentTime = 0;
     const oldPf = document.getElementById('pf-' + playing);
     const oldTl = document.getElementById('tl-' + playing);
     if (oldPf) oldPf.style.width = '0%';
@@ -951,11 +1156,17 @@ function togglePlay(i) {
 
   playing = i;
   updatePlayButtons();
-  audios[i].play().catch((err) => {
-    console.log('Audio play failed:', err);
-    playing = null;
-    updatePlayButtons();
-  });
+
+  // Load and play
+  audio.load();
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise.catch((err) => {
+      console.log('Audio play failed:', err);
+      playing = null;
+      updatePlayButtons();
+    });
+  }
 }
 
 function castVote() {
@@ -978,8 +1189,9 @@ function castVote() {
 
   // Stop any playing
   if (playing !== null) {
-    audios[playing].pause();
-    audios[playing].currentTime = 0;
+    const prev = getAudio(playing);
+    prev.pause();
+    prev.currentTime = 0;
     playing = null;
   }
 
