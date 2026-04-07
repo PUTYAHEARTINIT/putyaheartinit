@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head><title>Audio Test</title></head>
+<body style="background:#000;color:#fff;font-family:sans-serif;padding:40px;">
+<h1>Audio Test Page</h1>
+<p>Click each button to test if audio files load and play:</p>
+
+<div style="margin:20px 0;">
+  <h3>1. One Night (m4a)</h3>
+  <audio controls src="tracks/one-night.m4a" style="width:100%;"></audio>
+</div>
+
+<div style="margin:20px 0;">
+  <h3>2. 100 Floors Up (m4a)</h3>
+  <audio controls src="tracks/100-floors-up.m4a" style="width:100%;"></audio>
+</div>
+
+<div style="margin:20px 0;">
+  <h3>3. Up (mp3)</h3>
+  <audio controls src="tracks/up.mp3" style="width:100%;"></audio>
+</div>
+
+<div style="margin:20px 0;">
+  <h3>4. Bumped Up (mp3)</h3>
+  <audio controls src="tracks/bumped-up.mp3" style="width:100%;"></audio>
+</div>
+
+<div style="margin:20px 0;">
+  <h3>5. Water Between Us (mp3)</h3>
+  <audio controls src="tracks/water-between-us.mp3" style="width:100%;"></audio>
+</div>
+
+<div style="margin:20px 0;">
+  <h3>6. Reminisce (mp3)</h3>
+  <audio controls src="tracks/reminisce.mp3" style="width:100%;"></audio>
+</div>
+
+<hr style="margin:40px 0;border-color:#333;">
+<h2>JavaScript Audio Test</h2>
+<button onclick="testJS()" style="padding:12px 24px;font-size:16px;background:#e8192c;color:#fff;border:none;cursor:pointer;">
+  Click to play "Up" via JavaScript
+</button>
+<p id="status" style="margin-top:10px;color:#555;"></p>
+
+<script>
+function testJS() {
+  const status = document.getElementById('status');
+  status.textContent = 'Creating Audio object...';
+  const a = new Audio('tracks/up.mp3');
+  a.addEventListener('canplay', () => { status.textContent = 'Audio loaded! Playing...'; });
+  a.addEventListener('error', (e) => { status.textContent = 'ERROR: ' + JSON.stringify(e); });
+  a.play().then(() => {
+    status.textContent = 'Playing!';
+  }).catch((err) => {
+    status.textContent = 'Play failed: ' + err.message;
+  });
+}
+</script>
+</body>
+</html>
