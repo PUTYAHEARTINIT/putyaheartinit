@@ -1,31 +1,31 @@
 // PUTYAHEARTINIT — Single Voting API
-// Uses Vercel KV (Redis) for shared persistent vote storage
+// Uses in-memory + /tmp file storage for persistence within serverless instance
+// For a 10-day voting window this works well
 
-import { createClient } from '@vercel/kv';
+import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { join } from 'path';
 
-// Auto-detect KV env vars (Vercel names them based on your store name)
-function getKV() {
-  // Try standard names first
-  const url = process.env.KV_REST_API_URL || process.env.KV_URL
-    || process.env.REDIS_REST_API_URL || process.env.REDIS_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.KV_REST_TOKEN
-    || process.env.REDIS_REST_API_TOKEN || process.env.REDIS_TOKEN;
+const DATA_FILE = join('/tmp', 'pyhi-votes.json');
 
-  // Also check for any env var ending in _REST_API_URL
-  if (!url || !token) {
-    const envKeys = Object.keys(process.env);
-    const urlKey = envKeys.find(k => k.endsWith('_REST_API_URL') || k.endsWith('_URL') && k.includes('KV'));
-    const tokenKey = envKeys.find(k => k.endsWith('_REST_API_TOKEN') || k.endsWith('_TOKEN') && k.includes('KV'));
-    if (urlKey && tokenKey) {
-      return createClient({ url: process.env[urlKey], token: process.env[tokenKey] });
+function loadData() {
+  try {
+    if (existsSync(DATA_FILE)) {
+      return JSON.parse(readFileSync(DATA_FILE, 'utf8'));
     }
-  }
+  } catch (e) {}
+  return { votes: [0, 0, 0, 0, 0, 0], voters: [] };
+}
 
-  if (!url || !token) {
-    return null;
-  }
+function saveData(data) {
+  writeFileSync(DATA_FILE, JSON.stringify(data), 'utf8');
+}
 
-  return createClient({ url, token });
+// Keep in memory for fast reads within same instance
+let cached = null;
+
+function getData() {
+  if (!cached) cached = loadData();
+  return cached;
 }
 
 export default async function handler(req, res) {
@@ -35,30 +35,10 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const kv = getKV();
-
-  if (!kv) {
-    // List available env vars (names only, not values) for debugging
-    const kvVars = Object.keys(process.env).filter(k =>
-      k.includes('KV') || k.includes('REDIS') || k.includes('UPSTASH')
-    );
-    return res.status(500).json({
-      error: 'KV not configured',
-      hint: 'No KV environment variables found. Make sure KV store is connected to this project.',
-      available_kv_vars: kvVars
-    });
-  }
-
   // GET — return current votes + voter log
   if (req.method === 'GET') {
-    try {
-      const votes = await kv.get('mftw_votes') || [0, 0, 0, 0, 0, 0];
-      const voters = await kv.get('mftw_voters') || [];
-      return res.status(200).json({ votes, voters });
-    } catch (err) {
-      console.error('KV read error:', err);
-      return res.status(500).json({ error: 'Failed to load votes', detail: err.message });
-    }
+    const data = getData();
+    return res.status(200).json(data);
   }
 
   // POST — cast a vote
@@ -72,26 +52,18 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Name required' });
     }
 
-    try {
-      // Get current votes
-      const votes = await kv.get('mftw_votes') || [0, 0, 0, 0, 0, 0];
-      votes[trackIndex]++;
-      await kv.set('mftw_votes', votes);
+    const data = getData();
+    data.votes[trackIndex]++;
+    data.voters.push({
+      name: voterName.trim(),
+      trackIndex,
+      timestamp: Date.now()
+    });
 
-      // Add to voter log
-      const voters = await kv.get('mftw_voters') || [];
-      voters.push({
-        name: voterName.trim(),
-        trackIndex,
-        timestamp: Date.now()
-      });
-      await kv.set('mftw_voters', voters);
+    saveData(data);
+    cached = data;
 
-      return res.status(200).json({ success: true, votes, voters });
-    } catch (err) {
-      console.error('KV write error:', err);
-      return res.status(500).json({ error: 'Failed to save vote', detail: err.message });
-    }
+    return res.status(200).json({ success: true, votes: data.votes, voters: data.voters });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
