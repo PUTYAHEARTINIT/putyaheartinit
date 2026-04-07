@@ -777,8 +777,13 @@
   <div class="hint">So Stevie knows who voted</div>
 </div>
 
-<!-- DEBUG LOG (remove after fixing) -->
-<div id="debug-log" style="max-width:960px;margin:8px auto;padding:8px 24px;font-family:monospace;font-size:11px;color:#e8192c;background:#0a0a0a;border:1px solid #1e1e1e;word-break:break-all;min-height:20px;">Click a play button to test audio...</div>
+<!-- HIDDEN AUDIO PLAYERS -->
+<audio id="audio-0" src="tracks/one-night.m4a" preload="auto" style="display:none;"></audio>
+<audio id="audio-1" src="tracks/100-floors-up.m4a" preload="auto" style="display:none;"></audio>
+<audio id="audio-2" src="tracks/up.mp3" preload="auto" style="display:none;"></audio>
+<audio id="audio-3" src="tracks/bumped-up.mp3" preload="auto" style="display:none;"></audio>
+<audio id="audio-4" src="tracks/water-between-us.mp3" preload="auto" style="display:none;"></audio>
+<audio id="audio-5" src="tracks/reminisce.mp3" preload="auto" style="display:none;"></audio>
 
 <!-- COUNTDOWN TIMER -->
 <div class="countdown-bar">
@@ -906,26 +911,21 @@ const audios = {};
 let animFrame = null;
 
 // ============================================
-// AUDIO — Use hidden <audio> elements in the DOM
+// AUDIO — Reference hidden <audio> elements in the HTML
 // ============================================
-(function createAudioElements() {
-  TRACKS.forEach((t, i) => {
-    const a = document.createElement('audio');
-    a.id = 'audio-' + i;
-    a.preload = 'metadata';
-    a.src = t.file;
-    a.style.display = 'none';
+TRACKS.forEach((t, i) => {
+  const a = document.getElementById('audio-' + i);
+  if (a) {
     a.addEventListener('ended', () => {
       playing = null;
       updatePlayButtons();
     });
-    document.body.appendChild(a);
     audios[i] = a;
-  });
-})();
+  }
+});
 
 function getAudio(i) {
-  return audios[i] || document.getElementById('audio-' + i);
+  return audios[i];
 }
 
 // Progress animation loop — runs independently of render
@@ -1158,7 +1158,7 @@ async function togglePlay(i) {
   if (playing !== null) {
     const prev = getAudio(playing);
     prev.pause();
-    prev.currentTime = 0;
+    if (prev.readyState >= 2) prev.currentTime = 0;
     const oldPf = document.getElementById('pf-' + playing);
     const oldTl = document.getElementById('tl-' + playing);
     if (oldPf) oldPf.style.width = '0%';
@@ -1168,13 +1168,18 @@ async function togglePlay(i) {
   playing = i;
   updatePlayButtons();
 
-  // Play
+  // Play — wait for canplay if not ready, don't touch currentTime until loaded
   try {
-    audio.currentTime = 0;
+    if (audio.readyState < 2) {
+      await new Promise((resolve, reject) => {
+        audio.addEventListener('canplay', resolve, { once: true });
+        audio.addEventListener('error', reject, { once: true });
+        audio.load();
+      });
+    }
     await audio.play();
-    if (document.getElementById('debug-log')) document.getElementById('debug-log').textContent = 'Playing: ' + TRACKS[i].name + ' (' + TRACKS[i].file + ')';
   } catch(err) {
-    if (document.getElementById('debug-log')) document.getElementById('debug-log').textContent = 'ERROR: ' + err.name + ' - ' + err.message + ' | File: ' + TRACKS[i].file + ' | readyState: ' + audio.readyState + ' | networkState: ' + audio.networkState + ' | src: ' + audio.src;
+    console.log('Audio play failed:', err);
     playing = null;
     updatePlayButtons();
   }
@@ -1202,7 +1207,7 @@ function castVote() {
   if (playing !== null) {
     const prev = getAudio(playing);
     prev.pause();
-    prev.currentTime = 0;
+    if (prev.readyState >= 2) prev.currentTime = 0;
     playing = null;
   }
 
