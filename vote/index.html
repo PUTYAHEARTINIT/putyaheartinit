@@ -777,6 +777,9 @@
   <div class="hint">So Stevie knows who voted</div>
 </div>
 
+<!-- DEBUG LOG (remove after fixing) -->
+<div id="debug-log" style="max-width:960px;margin:8px auto;padding:8px 24px;font-family:monospace;font-size:11px;color:#e8192c;background:#0a0a0a;border:1px solid #1e1e1e;word-break:break-all;min-height:20px;">Click a play button to test audio...</div>
+
 <!-- COUNTDOWN TIMER -->
 <div class="countdown-bar">
   <span class="countdown-label">Voting Closes In</span>
@@ -1169,8 +1172,9 @@ async function togglePlay(i) {
   try {
     audio.currentTime = 0;
     await audio.play();
+    if (document.getElementById('debug-log')) document.getElementById('debug-log').textContent = 'Playing: ' + TRACKS[i].name + ' (' + TRACKS[i].file + ')';
   } catch(err) {
-    console.log('Audio play failed:', err);
+    if (document.getElementById('debug-log')) document.getElementById('debug-log').textContent = 'ERROR: ' + err.name + ' - ' + err.message + ' | File: ' + TRACKS[i].file + ' | readyState: ' + audio.readyState + ' | networkState: ' + audio.networkState + ' | src: ' + audio.src;
     playing = null;
     updatePlayButtons();
   }
