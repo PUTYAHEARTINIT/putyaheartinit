@@ -903,18 +903,26 @@ const audios = {};
 let animFrame = null;
 
 // ============================================
-// AUDIO — Create on demand (browser autoplay policy)
+// AUDIO — Use hidden <audio> elements in the DOM
 // ============================================
-function getAudio(i) {
-  if (!audios[i]) {
-    const a = new Audio(TRACKS[i].file);
+(function createAudioElements() {
+  TRACKS.forEach((t, i) => {
+    const a = document.createElement('audio');
+    a.id = 'audio-' + i;
+    a.preload = 'metadata';
+    a.src = t.file;
+    a.style.display = 'none';
     a.addEventListener('ended', () => {
       playing = null;
       updatePlayButtons();
     });
+    document.body.appendChild(a);
     audios[i] = a;
-  }
-  return audios[i];
+  });
+})();
+
+function getAudio(i) {
+  return audios[i] || document.getElementById('audio-' + i);
 }
 
 // Progress animation loop — runs independently of render
@@ -1133,7 +1141,7 @@ function pick(i) {
   updateSelectedState();
 }
 
-function togglePlay(i) {
+async function togglePlay(i) {
   const audio = getAudio(i);
 
   if (playing === i) {
@@ -1157,15 +1165,14 @@ function togglePlay(i) {
   playing = i;
   updatePlayButtons();
 
-  // Load and play
-  audio.load();
-  const playPromise = audio.play();
-  if (playPromise !== undefined) {
-    playPromise.catch((err) => {
-      console.log('Audio play failed:', err);
-      playing = null;
-      updatePlayButtons();
-    });
+  // Play
+  try {
+    audio.currentTime = 0;
+    await audio.play();
+  } catch(err) {
+    console.log('Audio play failed:', err);
+    playing = null;
+    updatePlayButtons();
   }
 }
 
