@@ -676,38 +676,7 @@
   <span class="f-copy">Vision Farm™ — That's The Way Holdings</span>
 </footer>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-
 <script>
-// ============================================
-// FIREBASE CONFIG
-// ============================================
-const firebaseConfig = {
-  apiKey: "AIzaSyDVOTE_PLACEHOLDER",
-  authDomain: "pyhi-vote.firebaseapp.com",
-  databaseURL: "https://pyhi-vote-default-rtdb.firebaseio.com",
-  projectId: "pyhi-vote",
-  storageBucket: "pyhi-vote.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:placeholder"
-};
-
-let db = null;
-let useFirebase = false;
-
-// Try to init Firebase — falls back to localStorage if not configured
-try {
-  if (firebaseConfig.apiKey !== "AIzaSyDVOTE_PLACEHOLDER") {
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-    useFirebase = true;
-  }
-} catch(e) {
-  console.log('Firebase not configured, using localStorage');
-}
-
 // ============================================
 // TRACK DATA
 // ============================================
@@ -769,37 +738,43 @@ function startProgressLoop() {
 startProgressLoop();
 
 // ============================================
-// FIREBASE — Load & sync votes in real-time
+// API — Load & save votes via /api/vote
 // ============================================
-function loadVotes() {
-  if (useFirebase && db) {
-    db.ref('votes').on('value', (snap) => {
-      const data = snap.val();
-      if (data) {
-        votes = TRACKS.map((t, i) => (data[i] && data[i].count) || 0);
-      }
-      renderVoteCounts();
-    });
+async function loadVotes() {
+  try {
+    const res = await fetch('/api/vote');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.votes) votes = data.votes;
+      if (data.voters) window._voters = data.voters;
+    }
+  } catch(e) {
+    console.log('API not available, using local votes');
   }
+  renderVoteCounts();
 }
 
-function saveVoteToFirebase(trackIndex, voterName) {
-  if (useFirebase && db) {
-    // Increment vote count
-    db.ref('votes/' + trackIndex + '/count').transaction((current) => (current || 0) + 1);
-    // Save voter record
-    db.ref('voters').push({
-      name: voterName,
-      track: TRACKS[trackIndex].name,
-      trackIndex: trackIndex,
-      timestamp: Date.now()
+async function saveVoteToAPI(trackIndex, voterName) {
+  try {
+    const res = await fetch('/api/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trackIndex, voterName })
     });
-  } else {
-    // Fallback: localStorage
-    votes[trackIndex]++;
-    localStorage.setItem('pyhi_votes', JSON.stringify(votes));
-    renderVoteCounts();
+    if (res.ok) {
+      const data = await res.json();
+      if (data.votes) votes = data.votes;
+      if (data.voters) window._voters = data.voters;
+      renderVoteCounts();
+      return;
+    }
+  } catch(e) {
+    console.log('API save failed, saving locally');
   }
+  // Fallback: localStorage
+  votes[trackIndex]++;
+  localStorage.setItem('pyhi_votes', JSON.stringify(votes));
+  renderVoteCounts();
 }
 
 loadVotes();
@@ -998,8 +973,8 @@ function castVote() {
   localStorage.setItem(VOTED_KEY, 'true');
   localStorage.setItem(VOTER_KEY, name);
 
-  // Save to Firebase or localStorage
-  saveVoteToFirebase(selected, name);
+  // Save to API or localStorage
+  saveVoteToAPI(selected, name);
 
   // Stop any playing
   if (playing !== null) {
@@ -1064,43 +1039,51 @@ function showAdmin() {
     document.getElementById('admin-results').innerHTML = html;
   }
 
-  // Load voter list from Firebase
-  function loadVoters() {
-    if (useFirebase && db) {
-      db.ref('voters').orderByChild('timestamp').on('value', (snap) => {
-        const data = snap.val();
-        if (!data) { document.getElementById('admin-voters').innerHTML = '<p style="color:#333;">No votes yet</p>'; return; }
+  // Load voter list from API
+  async function loadVoters() {
+    try {
+      const res = await fetch('/api/vote');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.votes) votes = data.votes;
+        const voterList = (data.voters || []).reverse();
 
-        const voterList = Object.values(data).reverse();
+        if (voterList.length === 0) {
+          document.getElementById('admin-voters').innerHTML = '<p style="color:#333;">No votes yet</p>';
+          return;
+        }
+
         let html = '<h2 style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;letter-spacing:3px;color:#555;margin-bottom:16px;">VOTER LOG</h2>';
         voterList.forEach(v => {
           const d = new Date(v.timestamp);
           const time = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+          const trackName = TRACKS[v.trackIndex] ? TRACKS[v.trackIndex].name : 'Unknown';
           html += `
             <div style="padding:12px 16px;background:#0a0a0a;border:1px solid #141414;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;">
               <div>
                 <span style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">${v.name}</span>
                 <span style="color:#3a3a3a;font-size:12px;margin-left:12px;">voted for</span>
-                <span style="color:#e8192c;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:1px;margin-left:4px;">${v.track}</span>
+                <span style="color:#e8192c;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:1px;margin-left:4px;">${trackName}</span>
               </div>
               <span style="font-size:11px;color:#2a2a2a;">${time}</span>
             </div>
           `;
         });
         document.getElementById('admin-voters').innerHTML = html;
-      });
-    } else {
-      document.getElementById('admin-voters').innerHTML = '<p style="color:#555;font-size:13px;">Firebase not configured — voter log requires Firebase. Vote counts shown from localStorage.</p>';
+      }
+    } catch(e) {
+      document.getElementById('admin-voters').innerHTML = '<p style="color:#555;font-size:13px;">Could not load voter log. API may not be configured yet.</p>';
     }
   }
 
   updateAdmin();
   loadVoters();
 
-  // Real-time updates
-  if (useFirebase && db) {
-    db.ref('votes').on('value', () => { updateAdmin(); });
-  }
+  // Refresh every 10 seconds
+  setInterval(async () => {
+    await loadVoters();
+    updateAdmin();
+  }, 10000);
 }
 
 // ============================================
