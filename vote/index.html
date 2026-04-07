@@ -676,7 +676,41 @@
   <span class="f-copy">Vision Farm™ — That's The Way Holdings</span>
 </footer>
 
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+
 <script>
+// ============================================
+// FIREBASE CONFIG
+// ============================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDVOTE_PLACEHOLDER",
+  authDomain: "pyhi-vote.firebaseapp.com",
+  databaseURL: "https://pyhi-vote-default-rtdb.firebaseio.com",
+  projectId: "pyhi-vote",
+  storageBucket: "pyhi-vote.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:placeholder"
+};
+
+let db = null;
+let useFirebase = false;
+
+// Try to init Firebase — falls back to localStorage if not configured
+try {
+  if (firebaseConfig.apiKey !== "AIzaSyDVOTE_PLACEHOLDER") {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+    useFirebase = true;
+  }
+} catch(e) {
+  console.log('Firebase not configured, using localStorage');
+}
+
+// ============================================
+// TRACK DATA
+// ============================================
 const TRACKS = [
   { num: '01', name: 'One Night',        vibe: 'Late night energy / Flex',      file: 'tracks/one-night.m4a' },
   { num: '02', name: '100 Floors Up',    vibe: 'Ambition / Elevated',           file: 'tracks/100-floors-up.m4a' },
@@ -686,56 +720,154 @@ const TRACKS = [
   { num: '06', name: 'Reminisce',        vibe: 'Nostalgia / Community',         file: 'tracks/reminisce.mp3' },
 ];
 
-// Persistent votes via localStorage
-const VOTES_KEY = 'pyhi_votes';
+// ============================================
+// STATE
+// ============================================
 const VOTED_KEY = 'pyhi_voted';
-const savedVotes = localStorage.getItem(VOTES_KEY);
-const votes = savedVotes ? JSON.parse(savedVotes) : [0, 0, 0, 0, 0, 0];
+const VOTER_KEY = 'pyhi_voter_name';
+let votes = [0, 0, 0, 0, 0, 0];
 let selected = null;
 let voted = localStorage.getItem(VOTED_KEY) === 'true';
 let playing = null;
-const timers = {};
 const audios = {};
+let animFrame = null;
 
-// Pre-create audio elements
+// ============================================
+// AUDIO — Pre-create elements
+// ============================================
 TRACKS.forEach((t, i) => {
-  const a = new Audio(t.file);
+  const a = new Audio();
   a.preload = 'none';
-  a.addEventListener('timeupdate', () => {
-    if (playing !== i) return;
-    const pf = document.getElementById('pf-'+i);
-    const tl = document.getElementById('tl-'+i);
-    if (pf && a.duration) pf.style.width = ((a.currentTime / a.duration) * 100) + '%';
-    if (tl) {
-      const m = Math.floor(a.currentTime / 60);
-      const s = Math.floor(a.currentTime % 60);
-      tl.textContent = m + ':' + (s < 10 ? '0'+s : s);
-    }
+  a.src = t.file;
+  a.addEventListener('ended', () => {
+    playing = null;
+    updatePlayButtons();
   });
-  a.addEventListener('ended', () => { playing = null; render(); });
   audios[i] = a;
 });
 
-function saveVotes() { localStorage.setItem(VOTES_KEY, JSON.stringify(votes)); }
+// Progress animation loop — runs independently of render
+function startProgressLoop() {
+  function tick() {
+    if (playing !== null) {
+      const a = audios[playing];
+      const pf = document.getElementById('pf-' + playing);
+      const tl = document.getElementById('tl-' + playing);
+      if (pf && a.duration) {
+        pf.style.width = ((a.currentTime / a.duration) * 100) + '%';
+      }
+      if (tl) {
+        const m = Math.floor(a.currentTime / 60);
+        const s = Math.floor(a.currentTime % 60);
+        tl.textContent = m + ':' + (s < 10 ? '0' + s : s);
+      }
+    }
+    animFrame = requestAnimationFrame(tick);
+  }
+  tick();
+}
+startProgressLoop();
 
-function totalVotes() { return votes.reduce((a,b)=>a+b,0); }
+// ============================================
+// FIREBASE — Load & sync votes in real-time
+// ============================================
+function loadVotes() {
+  if (useFirebase && db) {
+    db.ref('votes').on('value', (snap) => {
+      const data = snap.val();
+      if (data) {
+        votes = TRACKS.map((t, i) => (data[i] && data[i].count) || 0);
+      }
+      renderVoteCounts();
+    });
+  }
+}
 
+function saveVoteToFirebase(trackIndex, voterName) {
+  if (useFirebase && db) {
+    // Increment vote count
+    db.ref('votes/' + trackIndex + '/count').transaction((current) => (current || 0) + 1);
+    // Save voter record
+    db.ref('voters').push({
+      name: voterName,
+      track: TRACKS[trackIndex].name,
+      trackIndex: trackIndex,
+      timestamp: Date.now()
+    });
+  } else {
+    // Fallback: localStorage
+    votes[trackIndex]++;
+    localStorage.setItem('pyhi_votes', JSON.stringify(votes));
+    renderVoteCounts();
+  }
+}
+
+loadVotes();
+
+// ============================================
+// RENDER — Only rebuilds once, then updates in place
+// ============================================
+function totalVotes() { return votes.reduce((a, b) => a + b, 0); }
 function maxVotes() { return Math.max(...votes); }
 
-function render() {
-  const wrap = document.getElementById('tracksWrap');
-  wrap.innerHTML = '';
+function renderVoteCounts() {
   const mx = maxVotes();
-
   document.getElementById('totalVotes').textContent = totalVotes() + ' Total';
 
   TRACKS.forEach((t, i) => {
-    const isLeading = votes[i] === mx;
-    const pct = mx > 0 ? Math.round((votes[i] / mx) * 100) : 0;
-    const isSel = selected === i;
+    const card = document.querySelector(`[data-track-idx="${i}"]`);
+    if (!card) return;
 
+    const isLeading = votes[i] === mx && mx > 0;
+    const pct = mx > 0 ? Math.round((votes[i] / mx) * 100) : 0;
+
+    // Update leading state
+    card.classList.toggle('leading', isLeading);
+
+    // Update vote count text
+    const tally = card.querySelector('.vote-tally');
+    if (tally) {
+      tally.textContent = votes[i] + ' vote' + (votes[i] !== 1 ? 's' : '');
+      tally.classList.toggle('hot', votes[i] > 10);
+    }
+
+    // Update vote bar
+    const bar = card.querySelector('.vote-bar');
+    const barInner = card.querySelector('.vote-bar-inner');
+    if (bar) bar.classList.toggle('show', votes[i] > 0);
+    if (barInner) barInner.style.width = pct + '%';
+  });
+}
+
+function updatePlayButtons() {
+  TRACKS.forEach((t, i) => {
+    const btn = document.querySelector(`[data-play-idx="${i}"]`);
+    if (!btn) return;
+    btn.classList.toggle('playing', playing === i);
+    btn.textContent = playing === i ? '⏸' : '▶';
+  });
+}
+
+function updateSelectedState() {
+  TRACKS.forEach((t, i) => {
+    const card = document.querySelector(`[data-track-idx="${i}"]`);
+    if (!card) return;
+    const isSel = selected === i;
+    card.classList.toggle('selected', isSel);
+    const selBtn = card.querySelector('.sel-btn');
+    if (selBtn) selBtn.textContent = isSel ? '✓ Selected' : 'Select';
+  });
+}
+
+// Initial full render — only runs once
+function render() {
+  const wrap = document.getElementById('tracksWrap');
+  wrap.innerHTML = '';
+
+  TRACKS.forEach((t, i) => {
     const card = document.createElement('div');
-    card.className = `track-card${isSel?' selected':''}${isLeading?' leading':''}`;
+    card.className = 'track-card';
+    card.setAttribute('data-track-idx', i);
     card.style.animationDelay = (i * 0.07) + 's';
 
     card.innerHTML = `
@@ -748,40 +880,64 @@ function render() {
           </div>
           <div class="track-vibe">${t.vibe}</div>
           <div class="mini-player">
-            <button class="play-btn${playing===i?' playing':''}" onclick="togglePlay(event,${i})">
-              ${playing===i?'⏸':'▶'}
-            </button>
-            <div class="progress-track">
+            <button class="play-btn" data-play-idx="${i}">▶</button>
+            <div class="progress-track" data-progress-idx="${i}">
               <div class="progress-fill" id="pf-${i}"></div>
             </div>
             <span class="time-label" id="tl-${i}">0:00</span>
           </div>
         </div>
         <div class="vote-side">
-          <button class="sel-btn" onclick="pick(event,${i})">
-            ${isSel ? '✓ Selected' : 'Select'}
-          </button>
-          <div class="vote-tally${votes[i]>10?' hot':''}">
-            ${votes[i]} vote${votes[i]!==1?'s':''}
-          </div>
+          <button class="sel-btn">Select</button>
+          <div class="vote-tally">0 votes</div>
         </div>
       </div>
-      <div class="vote-bar${votes[i]>0?' show':''}">
-        <div class="vote-bar-inner" style="width:${pct}%"></div>
+      <div class="vote-bar">
+        <div class="vote-bar-inner"></div>
       </div>
     `;
 
+    // Play button click
+    card.querySelector('.play-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePlay(i);
+    });
+
+    // Progress bar seek
+    card.querySelector('.progress-track').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const a = audios[i];
+      if (a.duration) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const pct = (e.clientX - rect.left) / rect.width;
+        a.currentTime = pct * a.duration;
+      }
+    });
+
+    // Select button click
+    card.querySelector('.sel-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      pick(i);
+    });
+
+    // Card click = select
     card.addEventListener('click', (e) => {
       if (e.target.closest('.play-btn,.progress-track')) return;
-      pick(e, i);
+      pick(i);
     });
 
     wrap.appendChild(card);
   });
+
+  renderVoteCounts();
+  updateSelectedState();
+  updatePlayButtons();
 }
 
-function pick(e, i) {
-  e.stopPropagation();
+// ============================================
+// INTERACTIONS
+// ============================================
+function pick(i) {
   if (voted) return;
   selected = selected === i ? null : i;
 
@@ -797,35 +953,34 @@ function pick(e, i) {
     hint.textContent = 'Select a track above';
     hint.classList.remove('active');
   }
-  render();
+  updateSelectedState();
 }
 
-function togglePlay(e, i) {
-  e.stopPropagation();
-
+function togglePlay(i) {
   if (playing === i) {
     audios[i].pause();
     playing = null;
-    render();
+    updatePlayButtons();
     return;
   }
 
+  // Stop previous
   if (playing !== null) {
     audios[playing].pause();
     audios[playing].currentTime = 0;
-    const old = document.getElementById('pf-'+playing);
-    const oldTl = document.getElementById('tl-'+playing);
-    if (old) old.style.width = '0%';
+    const oldPf = document.getElementById('pf-' + playing);
+    const oldTl = document.getElementById('tl-' + playing);
+    if (oldPf) oldPf.style.width = '0%';
     if (oldTl) oldTl.textContent = '0:00';
   }
 
   playing = i;
-  audios[i].play().catch(() => {
-    // Audio file not loaded yet
+  updatePlayButtons();
+  audios[i].play().catch((err) => {
+    console.log('Audio play failed:', err);
     playing = null;
-    render();
+    updatePlayButtons();
   });
-  render();
 }
 
 function castVote() {
@@ -839,40 +994,126 @@ function castVote() {
     return;
   }
 
-  votes[selected]++;
   voted = true;
-  saveVotes();
   localStorage.setItem(VOTED_KEY, 'true');
+  localStorage.setItem(VOTER_KEY, name);
+
+  // Save to Firebase or localStorage
+  saveVoteToFirebase(selected, name);
 
   // Stop any playing
-  if (playing !== null) { audios[playing].pause(); audios[playing].currentTime = 0; playing = null; }
+  if (playing !== null) {
+    audios[playing].pause();
+    audios[playing].currentTime = 0;
+    playing = null;
+  }
 
   document.getElementById('confirmTrackName').textContent = TRACKS[selected].name.toUpperCase();
   document.getElementById('voteForm').style.display = 'none';
   document.getElementById('confirmBlock').classList.add('show');
 
-  render();
-
   // Lock all cards
-  document.querySelectorAll('.track-card').forEach(c => {
+  document.querySelectorAll('.track-card').forEach((c, idx) => {
     c.style.pointerEvents = 'none';
-    c.style.opacity = selected === [...document.querySelectorAll('.track-card')].indexOf(c) ? '1' : '0.4';
+    c.style.opacity = selected === idx ? '1' : '0.4';
   });
 }
 
+// ============================================
+// ADMIN DASHBOARD — ?admin in URL
+// ============================================
+function showAdmin() {
+  if (!window.location.search.includes('admin')) return;
+
+  const adminDiv = document.createElement('div');
+  adminDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(6,6,6,0.97);z-index:9999;overflow-y:auto;padding:40px 20px;';
+  adminDiv.innerHTML = `
+    <div style="max-width:700px;margin:0 auto;">
+      <h1 style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;color:#e8192c;margin-bottom:8px;">ADMIN DASHBOARD</h1>
+      <p style="font-size:12px;letter-spacing:4px;color:#333;text-transform:uppercase;margin-bottom:40px;">Melodies from the Westside — Single Vote Results</p>
+      <div id="admin-results"></div>
+      <div id="admin-voters" style="margin-top:40px;"></div>
+    </div>
+  `;
+  document.body.appendChild(adminDiv);
+
+  function updateAdmin() {
+    const mx = maxVotes();
+    const total = totalVotes();
+    let html = `<p style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:#555;margin-bottom:24px;">${total} TOTAL VOTES</p>`;
+
+    // Sort by votes descending
+    const sorted = TRACKS.map((t, i) => ({ ...t, idx: i, count: votes[i] })).sort((a, b) => b.count - a.count);
+
+    sorted.forEach((t) => {
+      const pct = total > 0 ? Math.round((t.count / total) * 100) : 0;
+      const isLeading = t.count === mx && mx > 0;
+      html += `
+        <div style="margin-bottom:16px;padding:16px;background:#0f0f0f;border:1px solid #1e1e1e;${isLeading?'border-left:3px solid #e8192c;':''}">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">
+              ${t.name} ${isLeading?'<span style="font-size:9px;letter-spacing:3px;background:#e8192c;color:white;padding:2px 7px;margin-left:8px;">LEADING</span>':''}
+            </span>
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#e8192c;">${t.count} votes (${pct}%)</span>
+          </div>
+          <div style="height:4px;background:#111;"><div style="height:100%;background:linear-gradient(90deg,#5a0f18,#e8192c);width:${pct}%;transition:width 0.5s;"></div></div>
+        </div>
+      `;
+    });
+
+    document.getElementById('admin-results').innerHTML = html;
+  }
+
+  // Load voter list from Firebase
+  function loadVoters() {
+    if (useFirebase && db) {
+      db.ref('voters').orderByChild('timestamp').on('value', (snap) => {
+        const data = snap.val();
+        if (!data) { document.getElementById('admin-voters').innerHTML = '<p style="color:#333;">No votes yet</p>'; return; }
+
+        const voterList = Object.values(data).reverse();
+        let html = '<h2 style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;letter-spacing:3px;color:#555;margin-bottom:16px;">VOTER LOG</h2>';
+        voterList.forEach(v => {
+          const d = new Date(v.timestamp);
+          const time = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+          html += `
+            <div style="padding:12px 16px;background:#0a0a0a;border:1px solid #141414;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;">
+              <div>
+                <span style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">${v.name}</span>
+                <span style="color:#3a3a3a;font-size:12px;margin-left:12px;">voted for</span>
+                <span style="color:#e8192c;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:600;letter-spacing:1px;margin-left:4px;">${v.track}</span>
+              </div>
+              <span style="font-size:11px;color:#2a2a2a;">${time}</span>
+            </div>
+          `;
+        });
+        document.getElementById('admin-voters').innerHTML = html;
+      });
+    } else {
+      document.getElementById('admin-voters').innerHTML = '<p style="color:#555;font-size:13px;">Firebase not configured — voter log requires Firebase. Vote counts shown from localStorage.</p>';
+    }
+  }
+
+  updateAdmin();
+  loadVoters();
+
+  // Real-time updates
+  if (useFirebase && db) {
+    db.ref('votes').on('value', () => { updateAdmin(); });
+  }
+}
+
+// ============================================
+// INIT
+// ============================================
 render();
 
-// If already voted, show confirmation on load
 if (voted) {
   document.getElementById('voteForm').style.display = 'none';
   document.getElementById('confirmBlock').classList.add('show');
 }
 
-// Admin view: add ?admin to URL to see raw vote data
-if (window.location.search.includes('admin')) {
-  const data = TRACKS.map((t,i) => t.name + ': ' + votes[i] + ' votes').join('\n');
-  console.log('=== VOTE RESULTS ===\n' + data);
-}
+showAdmin();
 </script>
 </body>
 </html>
