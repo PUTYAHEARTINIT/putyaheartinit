@@ -14,7 +14,7 @@
   --gold:#f0a500;--green:#22c55e;--blue:#3b82f6;--purple:#8b5cf6;
 }
 html,body{height:100%;background:var(--black);color:var(--white);font-family:'Barlow',sans-serif;overflow:hidden;}
-body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5;}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:-1;opacity:.5;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:var(--dark);}
 ::-webkit-scrollbar-thumb{background:#2a2a2a;}
@@ -883,7 +883,7 @@ function renderSplits(){
 }
 
 function setSplitProject(i){splitProject=i;renderSplits()}
-function removeSplit(i){const pid=CATALOG_DATA[splitProject].id;SPLITS[pid].splice(i,1);renderSplits()}
+async function removeSplit(i){const pid=CATALOG_DATA[splitProject].id;const s=SPLITS[pid][i];if(s&&s.id)await apiDelete('splits',s.id);SPLITS[pid].splice(i,1);renderSplits()}
 
 // ===================== TASKS =====================
 const priColor={High:'#e8192c',Medium:'#f0a500',Low:'#555'}
@@ -914,9 +914,12 @@ function filterTasks(f,btn){
   renderTasks()
 }
 
-function toggleTask(id){
+async function toggleTask(id){
   const t=TASKS.find(t=>t.id===id)
-  if(t) t.status=t.status==='Done'?'Open':'Done'
+  if(t){
+    t.status=t.status==='Done'?'Open':'Done'
+    await apiPatch('tasks',id,{status:t.status})
+  }
   renderTasks()
 }
 
@@ -1036,7 +1039,7 @@ function renderAnalytics(){
 
 // ===================== CALENDAR =====================
 function renderCalendar(){
-  const events=[
+  const events=window._calEvents||[
     {date:'2026-04-17',label:'Vote Page Closes',color:'#e8192c'},
     {date:'2026-05-01',label:'Phase 1 — Frequency Found',color:'#f0a500'},
     {date:'2026-06-15',label:'Phase 3 — Double Feature',color:'#f0a500'},
@@ -1117,49 +1120,167 @@ function closeModal(e){
     document.getElementById('modal-bg').classList.remove('open')
 }
 
-function saveTask(){
+async function saveTask(){
   const title=document.getElementById('m-title').value.trim()
   if(!title) return
-  TASKS.push({id:Date.now(),title,project:document.getElementById('m-proj').value,due:document.getElementById('m-due').value,priority:document.getElementById('m-pri').value,status:document.getElementById('m-stat').value,notes:document.getElementById('m-notes').value})
+  const task={title,project:document.getElementById('m-proj').value,due:document.getElementById('m-due').value,priority:document.getElementById('m-pri').value,status:document.getElementById('m-stat').value,notes:document.getElementById('m-notes').value}
+  const saved=await apiPost('tasks',task)
+  if(saved&&saved[0]) TASKS.push({id:saved[0].id,...task})
+  else TASKS.push({id:Date.now(),...task})
   closeModal()
   renderTasks()
 }
 
-function saveSplit(){
+async function saveSplit(){
   const name=document.getElementById('s-name').value.trim()
   if(!name) return
   const pid=CATALOG_DATA[splitProject].id
   if(!SPLITS[pid]) SPLITS[pid]=[]
-  SPLITS[pid].push({name,role:document.getElementById('s-role').value,master:Number(document.getElementById('s-master').value)||0,publishing:Number(document.getElementById('s-pub').value)||0,pro:document.getElementById('s-pro').value})
+  const split={project_id:pid,name,role:document.getElementById('s-role').value,master_pct:Number(document.getElementById('s-master').value)||0,publishing_pct:Number(document.getElementById('s-pub').value)||0,pro:document.getElementById('s-pro').value}
+  const saved=await apiPost('splits',split)
+  SPLITS[pid].push({id:saved&&saved[0]?saved[0].id:Date.now(),name:split.name,role:split.role,master:split.master_pct,publishing:split.publishing_pct,pro:split.pro})
   closeModal()
   renderSplits()
 }
 
-function saveVault(){
+async function saveVault(){
   const title=document.getElementById('v-title').value.trim()
   if(!title) return
+  const entry={title,category:document.getElementById('v-cat').value,tags:document.getElementById('v-tags').value||'',body:document.getElementById('v-body').value||''}
+  await apiPost('vault_entries',entry)
   const list=document.getElementById('vault-list')
   const date=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
   const el=document.createElement('div')
   el.className='vault-item'
-  el.innerHTML=`<div class="vault-item-title">${title}</div><div class="vault-item-meta">${document.getElementById('v-cat').value} · ${date} · ${document.getElementById('v-tags').value||'Untagged'}</div>`
+  el.innerHTML=`<div class="vault-item-title">${title}</div><div class="vault-item-meta">${entry.category} · ${date} · ${entry.tags||'Untagged'}</div>`
   list.prepend(el)
   closeModal()
 }
 
+// ===================== API LAYER =====================
+const API = '/api/office';
+
+async function apiGet(table) {
+  try {
+    const res = await fetch(`${API}?table=${table}`);
+    if (res.ok) return await res.json();
+  } catch(e) { console.log(`API load failed for ${table}:`, e); }
+  return [];
+}
+
+async function apiPost(table, data) {
+  try {
+    const res = await fetch(`${API}?table=${table}`, {
+      method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
+  } catch(e) { console.log(`API save failed for ${table}:`, e); }
+  return null;
+}
+
+async function apiPatch(table, id, data) {
+  try {
+    const res = await fetch(`${API}?table=${table}&id=${id}`, {
+      method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+    });
+    if (res.ok) return await res.json();
+  } catch(e) { console.log(`API update failed for ${table}:`, e); }
+  return null;
+}
+
+async function apiDelete(table, id) {
+  try {
+    const res = await fetch(`${API}?table=${table}&id=${id}`, { method: 'DELETE' });
+    if (res.ok) return true;
+  } catch(e) { console.log(`API delete failed for ${table}:`, e); }
+  return false;
+}
+
 // ===================== INIT =====================
 buildNav()
-initDashboard()
-renderProjects()
-renderCatalog()
-renderSplits()
-renderTasks()
-renderGoals()
-renderSocial()
-renderD2C()
-renderRevenue()
-renderAnalytics()
-renderCalendar()
+
+// Load all data from Supabase then render
+async function loadAndRender() {
+  // Load projects
+  const dbProjects = await apiGet('projects');
+  if (dbProjects.length > 0) {
+    CATALOG_DATA.length = 0;
+    dbProjects.sort((a,b) => a.year - b.year).forEach(p => {
+      CATALOG_DATA.push({id:p.id, title:p.title, artist:p.artist, type:p.type, year:p.year, tracks:p.tracks, status:p.status, color:p.color, dsps:p.dsps||[]});
+    });
+  }
+
+  // Load tasks
+  const dbTasks = await apiGet('tasks');
+  if (dbTasks.length > 0) {
+    TASKS.length = 0;
+    dbTasks.forEach(t => TASKS.push({id:t.id, title:t.title, project:t.project, due:t.due, priority:t.priority, status:t.status, notes:t.notes||''}));
+  }
+
+  // Load splits
+  const dbSplits = await apiGet('splits');
+  if (dbSplits.length > 0) {
+    Object.keys(SPLITS).forEach(k => SPLITS[k] = []);
+    dbSplits.forEach(s => {
+      if (!SPLITS[s.project_id]) SPLITS[s.project_id] = [];
+      SPLITS[s.project_id].push({id:s.id, name:s.name, role:s.role, master:s.master_pct, publishing:s.publishing_pct, pro:s.pro});
+    });
+  }
+
+  // Load goals
+  const dbGoals = await apiGet('goals');
+  if (dbGoals.length > 0) {
+    GOALS.length = 0;
+    dbGoals.forEach(g => GOALS.push({id:g.id, name:g.name, target:g.target, current:g.current_val, unit:g.unit, color:g.color}));
+  }
+
+  // Load vault
+  const dbVault = await apiGet('vault_entries');
+  if (dbVault.length > 0) {
+    const vl = document.getElementById('vault-list');
+    if (vl) {
+      vl.innerHTML = dbVault.map(v => {
+        const d = new Date(v.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+        return `<div class="vault-item"><div class="vault-item-title">${v.title}</div><div class="vault-item-meta">${v.category||'Uncategorized'} · ${d} · ${v.tags||'Untagged'}</div></div>`;
+      }).join('');
+    }
+  }
+
+  // Load calendar events
+  const dbEvents = await apiGet('calendar_events');
+  if (dbEvents.length > 0) {
+    window._calEvents = dbEvents.map(e => ({date:e.date, label:e.label, color:e.color}));
+  }
+
+  // Load contacts
+  const dbContacts = await apiGet('contacts');
+  if (dbContacts.length > 0) {
+    const cl = document.getElementById('contacts-list');
+    if (cl) {
+      cl.innerHTML = dbContacts.map(c => {
+        const initials = c.name.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase();
+        const pillColor = c.relationship === 'VIP' ? 'pill-gold' : c.relationship === 'Active' ? 'pill-blue' : 'pill-gray';
+        return `<div class="contact-card"><div class="contact-avatar">${initials}</div><div><div class="contact-name">${c.name}</div><div class="contact-role">${c.role||''}</div></div><span class="pill ${pillColor}" style="margin-left:auto">${c.tags||c.relationship||''}</span></div>`;
+      }).join('');
+    }
+  }
+
+  // Render everything
+  initDashboard();
+  renderProjects();
+  renderCatalog();
+  renderSplits();
+  renderTasks();
+  renderGoals();
+  renderSocial();
+  renderD2C();
+  renderRevenue();
+  renderAnalytics();
+  renderCalendar();
+}
+
+loadAndRender();
+
 </script>
 </body>
 </html>
