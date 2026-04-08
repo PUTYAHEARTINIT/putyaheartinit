@@ -826,6 +826,27 @@
 
 <script>
 // ============================================
+// VISIT TRACKING
+// ============================================
+function trackEvent(event) {
+  fetch('/api/visit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      event,
+      referrer: document.referrer || 'direct',
+      userAgent: navigator.userAgent,
+      screenSize: window.innerWidth + 'x' + window.innerHeight
+    })
+  }).catch(() => {});
+}
+
+// Track gate view on page load
+if (!localStorage.getItem('pyhi_gate_passed')) {
+  trackEvent('gate_view');
+}
+
+// ============================================
 // PASSWORD GATE
 // ============================================
 const ACCESS_CODE = 'westside';  // CHANGE THIS to your code
@@ -837,9 +858,11 @@ function checkGate() {
   if (code === ACCESS_CODE.toLowerCase()) {
     document.getElementById('gate').classList.add('unlocked');
     localStorage.setItem(GATE_KEY, 'true');
+    trackEvent('code_entered');
   } else {
     document.getElementById('gateError').classList.add('show');
     input.value = '';
+    trackEvent('wrong_code');
     setTimeout(() => document.getElementById('gateError').classList.remove('show'), 2000);
   }
 }
@@ -1202,6 +1225,7 @@ function castVote() {
 
   // Save to API or localStorage
   saveVoteToAPI(selected, name);
+  trackEvent('vote_cast');
 
   // Stop any playing
   if (playing !== null) {
@@ -1234,8 +1258,15 @@ function showAdmin() {
     <div style="max-width:700px;margin:0 auto;">
       <h1 style="font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:4px;color:#e8192c;margin-bottom:8px;">ADMIN DASHBOARD</h1>
       <p style="font-size:12px;letter-spacing:4px;color:#333;text-transform:uppercase;margin-bottom:40px;">Melodies from the Westside — Single Vote Results</p>
+
+      <!-- FUNNEL STATS -->
+      <div id="admin-funnel" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:32px;"></div>
+
       <div id="admin-results"></div>
       <div id="admin-voters" style="margin-top:40px;"></div>
+
+      <!-- VISIT LOG -->
+      <div id="admin-visits" style="margin-top:40px;"></div>
     </div>
   `;
   document.body.appendChild(adminDiv);
@@ -1304,13 +1335,74 @@ function showAdmin() {
     }
   }
 
+  // Load visit data
+  async function loadVisits() {
+    try {
+      const res = await fetch('/api/visit');
+      if (res.ok) {
+        const data = await res.json();
+        const visitList = (data.visits || []).reverse();
+
+        // Count events for funnel
+        const counts = { gate_view: 0, code_entered: 0, wrong_code: 0, vote_cast: 0 };
+        visitList.forEach(v => { if (counts[v.event] !== undefined) counts[v.event]++; });
+
+        // Unique visitors by IP
+        const uniqueIPs = new Set(visitList.filter(v => v.event === 'gate_view').map(v => v.ip));
+
+        // Funnel stats
+        const funnelEl = document.getElementById('admin-funnel');
+        if (funnelEl) {
+          const statStyle = 'text-align:center;padding:16px 8px;background:#0f0f0f;border:1px solid #1e1e1e;';
+          const numStyle = 'font-family:Bebas Neue,sans-serif;font-size:32px;color:#e8192c;line-height:1;';
+          const lblStyle = 'font-size:9px;letter-spacing:3px;color:#333;text-transform:uppercase;margin-top:6px;';
+          funnelEl.innerHTML = `
+            <div style="${statStyle}"><div style="${numStyle}">${uniqueIPs.size}</div><div style="${lblStyle}">Unique Visitors</div></div>
+            <div style="${statStyle}"><div style="${numStyle}">${counts.code_entered}</div><div style="${lblStyle}">Codes Entered</div></div>
+            <div style="${statStyle}"><div style="${numStyle}">${counts.vote_cast}</div><div style="${lblStyle}">Votes Cast</div></div>
+            <div style="${statStyle}"><div style="${numStyle}">${counts.wrong_code}</div><div style="${lblStyle}">Wrong Codes</div></div>
+          `;
+        }
+
+        // Visit log
+        const visitsEl = document.getElementById('admin-visits');
+        if (visitsEl && visitList.length > 0) {
+          const eventColors = { gate_view: '#333', code_entered: '#2d6a2e', wrong_code: '#6a2d2d', vote_cast: '#e8192c' };
+          const eventLabels = { gate_view: 'VISITED', code_entered: 'ENTERED CODE', wrong_code: 'WRONG CODE', vote_cast: 'VOTED' };
+
+          let html = '<h2 style="font-family:\'Bebas Neue\',sans-serif;font-size:28px;letter-spacing:3px;color:#555;margin-bottom:16px;">ACTIVITY LOG</h2>';
+          visitList.slice(0, 50).forEach(v => {
+            const d = new Date(v.timestamp);
+            const time = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+            const label = eventLabels[v.event] || v.event;
+            const color = eventColors[v.event] || '#333';
+            const device = v.userAgent.includes('iPhone') ? 'iPhone' : v.userAgent.includes('Android') ? 'Android' : v.userAgent.includes('Mac') ? 'Mac' : v.userAgent.includes('Windows') ? 'Windows' : 'Unknown';
+            html += `
+              <div style="padding:10px 16px;background:#0a0a0a;border:1px solid #141414;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center;border-left:3px solid ${color};">
+                <div>
+                  <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;color:${color};text-transform:uppercase;">${label}</span>
+                  <span style="color:#2a2a2a;font-size:11px;margin-left:12px;">${device}</span>
+                  <span style="color:#1a1a1a;font-size:10px;margin-left:8px;">${v.ip}</span>
+                </div>
+                <span style="font-size:10px;color:#2a2a2a;">${time}</span>
+              </div>
+            `;
+          });
+          visitsEl.innerHTML = html;
+        }
+      }
+    } catch(e) {}
+  }
+
   updateAdmin();
   loadVoters();
+  loadVisits();
 
   // Refresh every 10 seconds
   setInterval(async () => {
     await loadVoters();
     updateAdmin();
+    await loadVisits();
   }, 10000);
 }
 
