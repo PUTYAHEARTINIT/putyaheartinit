@@ -14,7 +14,7 @@
   --gold:#f0a500;--green:#22c55e;--blue:#3b82f6;--purple:#8b5cf6;
 }
 html,body{height:100%;background:var(--black);color:var(--white);font-family:'Barlow',sans-serif;overflow:hidden;}
-body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:-1;opacity:.5;}
+/* grain removed for Safari compatibility */
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:var(--dark);}
 ::-webkit-scrollbar-thumb{background:#2a2a2a;}
@@ -240,6 +240,21 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 .cal-day.today{border-color:var(--red);color:var(--red);}
 .cal-event{font-family:'Barlow Condensed',sans-serif;font-size:10px;background:rgba(232,25,44,.15);border-left:2px solid var(--red);padding:2px 5px;margin-top:4px;color:var(--off);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
+
+/* MOBILE */
+@media(max-width:768px){
+  #sidebar{position:fixed;left:-220px;height:100vh;z-index:500;transition:left .25s;}
+  #sidebar.mobile-open{left:0;}
+  #app{flex-direction:column;}
+  #main{width:100%;}
+  .metrics-4,.metrics-3{grid-template-columns:repeat(2,1fr);}
+  .grid-3,.grid-9{grid-template-columns:1fr;}
+  .grid-2{grid-template-columns:1fr;}
+  .page{padding:20px 16px;}
+  .page-title{font-size:36px;}
+  #topbar{padding:0 16px;}
+  .mobile-toggle{display:block !important;}
+}
 </style>
 </head>
 <body>
@@ -263,7 +278,7 @@ body::after{content:'';position:fixed;inset:0;background-image:url("data:image/s
 <!-- MAIN -->
 <div id="main">
   <header id="topbar">
-    <div class="topbar-l">ARTIST OPERATING SYSTEM</div>
+    <div class="topbar-l"><button class="mobile-toggle" style="display:none;background:transparent;border:1px solid #222;color:#fff;padding:6px 10px;margin-right:12px;cursor:pointer;font-family:Bebas Neue,sans-serif;font-size:14px;letter-spacing:2px" onclick="document.getElementById('sidebar').classList.toggle('mobile-open')">☰ MENU</button>ARTIST OPERATING SYSTEM</div>
     <div class="topbar-r">
       <div class="live-dot"></div>
       <span class="live-txt">LIVE</span>
@@ -744,7 +759,7 @@ function buildNav(){
   })
 }
 
-function showPage(id){
+function showPage(id){document.getElementById('sidebar').classList.remove('mobile-open');
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'))
   const page=document.getElementById('page-'+id)
