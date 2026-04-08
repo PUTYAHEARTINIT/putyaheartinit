@@ -1,44 +1,51 @@
 // PUTYAHEARTINIT — Single Voting API
-// Uses in-memory + /tmp file storage for persistence within serverless instance
-// For a 10-day voting window this works well
+// Persistent storage via Supabase (PostgreSQL)
 
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://lcmdahdtphckrgsgssrb.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjbWRhaGR0cGhja3Jnc2dzc3JiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2MDg0OTcsImV4cCI6MjA5MTE4NDQ5N30.0u-pwdqtZ7qt5xpCS43MixknUiRAOFIdZgvqISN-xrI';
 
-const DATA_FILE = join('/tmp', 'pyhi-votes.json');
-
-function loadData() {
-  try {
-    if (existsSync(DATA_FILE)) {
-      return JSON.parse(readFileSync(DATA_FILE, 'utf8'));
+async function supaFetch(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': options.method === 'POST' ? 'return=representation' : '',
+      ...options.headers
     }
-  } catch (e) {}
-  return { votes: [0, 0, 0, 0, 0, 0], voters: [] };
-}
-
-function saveData(data) {
-  writeFileSync(DATA_FILE, JSON.stringify(data), 'utf8');
-}
-
-// Keep in memory for fast reads within same instance
-let cached = null;
-
-function getData() {
-  if (!cached) cached = loadData();
-  return cached;
+  });
+  return res.json();
 }
 
 export default async function handler(req, res) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // GET — return current votes + voter log
+  // GET — return vote counts + voter log
   if (req.method === 'GET') {
-    const data = getData();
-    return res.status(200).json(data);
+    try {
+      const allVotes = await supaFetch('votes?select=*&order=created_at.desc');
+
+      // Build vote counts
+      const counts = [0, 0, 0, 0, 0, 0];
+      const voters = [];
+      allVotes.forEach(v => {
+        if (v.track_index >= 0 && v.track_index <= 5) counts[v.track_index]++;
+        voters.push({
+          name: v.voter_name,
+          trackIndex: v.track_index,
+          timestamp: new Date(v.created_at).getTime()
+        });
+      });
+
+      return res.status(200).json({ votes: counts, voters });
+    } catch (err) {
+      console.error('DB read error:', err);
+      return res.status(500).json({ error: 'Failed to load votes' });
+    }
   }
 
   // POST — cast a vote
@@ -52,18 +59,30 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Name required' });
     }
 
-    const data = getData();
-    data.votes[trackIndex]++;
-    data.voters.push({
-      name: voterName.trim(),
-      trackIndex,
-      timestamp: Date.now()
-    });
+    try {
+      await supaFetch('votes', {
+        method: 'POST',
+        body: JSON.stringify({ voter_name: voterName.trim(), track_index: trackIndex })
+      });
 
-    saveData(data);
-    cached = data;
+      // Return updated counts
+      const allVotes = await supaFetch('votes?select=*&order=created_at.desc');
+      const counts = [0, 0, 0, 0, 0, 0];
+      const voters = [];
+      allVotes.forEach(v => {
+        if (v.track_index >= 0 && v.track_index <= 5) counts[v.track_index]++;
+        voters.push({
+          name: v.voter_name,
+          trackIndex: v.track_index,
+          timestamp: new Date(v.created_at).getTime()
+        });
+      });
 
-    return res.status(200).json({ success: true, votes: data.votes, voters: data.voters });
+      return res.status(200).json({ success: true, votes: counts, voters });
+    } catch (err) {
+      console.error('DB write error:', err);
+      return res.status(500).json({ error: 'Failed to save vote' });
+    }
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
