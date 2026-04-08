@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PUTYAHEARTINIT — Artist Back Office</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,300;0,400;0,600;0,700;1,300&family=Barlow:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --red:#e8192c;--red-dark:#a50f1e;--black:#060606;--dark:#0a0a0a;
+  --card:#0f0f0f;--card2:#131313;--border:#1c1c1c;--border2:#242424;
+  --white:#fff;--off:#c8c2bb;--muted:#555;--muted2:#333;
+  --gold:#f0a500;--green:#22c55e;--blue:#3b82f6;--purple:#8b5cf6;
+}
+html,body{height:100%;background:var(--black);color:var(--white);font-family:'Barlow',sans-serif;overflow:hidden;}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:var(--dark);}
+::-webkit-scrollbar-thumb{background:#2a2a2a;}
+::-webkit-scrollbar-thumb:hover{background:var(--red);}
+
+/* LAYOUT */
+#app{display:flex;height:100vh;overflow:hidden;}
+
+/* SIDEBAR */
+#sidebar{
+  width:220px;min-width:220px;background:#080808;
+  border-right:1px solid #141414;display:flex;flex-direction:column;
+  transition:width .25s,min-width .25s;overflow:hidden;z-index:50;
+  flex-shrink:0;
+}
+#sidebar.collapsed{width:52px;min-width:52px;}
+.sidebar-logo{
+  height:56px;border-bottom:1px solid #141414;display:flex;
+  align-items:center;padding:0 14px;gap:10px;flex-shrink:0;
+}
+.logo-box{
+  width:28px;height:28px;background:var(--red);display:flex;
+  align-items:center;justify-content:center;flex-shrink:0;
+  font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff;
+}
+.logo-text{overflow:hidden;white-space:nowrap;}
+.logo-text .t1{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;color:#fff;}
+.logo-text .t2{font-family:'Barlow Condensed',sans-serif;font-size:9px;letter-spacing:3px;color:#333;text-transform:uppercase;}
+.red-bar{height:2px;background:var(--red);flex-shrink:0;}
+
+/* NAV */
+#nav{flex:1;overflow-y:auto;overflow-x:hidden;padding:10px 0;}
+.tier-label{
+  font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:4px;
+  padding:10px 14px 4px;overflow:hidden;white-space:nowrap;opacity:.6;
+  transition:opacity .2s;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 14px;
+  cursor:pointer;border-left:2px solid transparent;
+  color:var(--muted);font-family:'Barlow Condensed',sans-serif;
+  font-size:13px;letter-spacing:.5px;transition:all .15s;
+  white-space:nowrap;overflow:hidden;
+}
+.nav-item:hover{color:#aaa;background:rgba(255,255,255,.03);}
+.nav-item.active{color:#fff;background:rgba(232,25,44,.08);border-left-color:var(--red);}
+.nav-icon{font-size:13px;flex-shrink:0;}
+.nav-lbl{overflow:hidden;white-space:nowrap;}
+#sidebar.collapsed .nav-lbl,#sidebar.collapsed .logo-text,#sidebar.collapsed .tier-label{opacity:0;pointer-events:none;}
+
+.collapse-btn{
+  border:none;border-top:1px solid #141414;background:transparent;
+  color:#2a2a2a;padding:12px 14px;cursor:pointer;text-align:right;
+  font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;
+  transition:color .2s;flex-shrink:0;
+}
+.collapse-btn:hover{color:var(--red);}
+
+/* MAIN */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+#topbar{
+  height:56px;background:rgba(8,8,8,.97);border-bottom:1px solid #141414;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;flex-shrink:0;
+}
+.topbar-l{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:6px;color:#1e1e1e;}
+.topbar-r{display:flex;align-items:center;gap:20px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
+.live-txt{font-family:'Barlow Condensed',sans-serif;font-size:10px;letter-spacing:3px;color:#2a2a2a;}
+#content{flex:1;overflow-y:auto;background:var(--black);}
+
+/* PAGE WRAPPER */
+.page{display:none;padding:40px 32px;max-width:1400px;animation:fadeUp .3s ease;}
+.page.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* TYPOGRAPHY */
+.page-eyebrow{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:6px;color:var(--red);margin-bottom:8px;}
+.page-title{font-family:'Bebas Neue',sans-serif;font-size:52px;letter-spacing:3px;line-height:1;margin-bottom:8px;}
+.page-title em{color:var(--red);font-style:normal;}
+.page-sub{font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--muted);letter-spacing:1px;margin-bottom:32px;}
+
+/* METRIC CARDS */
+.metrics{display:grid;gap:3px;margin-bottom:24px;}
+.metrics-4{grid-template-columns:repeat(4,1fr);}
+.metrics-3{grid-template-columns:repeat(3,1fr);}
+.metrics-2{grid-template-columns:repeat(2,1fr);}
+.metric{background:var(--card);border:1px solid var(--border);padding:22px 24px;position:relative;overflow:hidden;}
+.metric::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:var(--red);}
+.metric-l{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:5px;color:var(--muted);margin-bottom:8px;}
+.metric-v{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:2px;line-height:1;}
+.metric-s{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:#444;margin-top:4px;}
+
+/* CARDS */
+.bo-card{background:var(--card);border:1px solid var(--border);transition:background .2s,border-color .2s;}
+.bo-card:hover{background:var(--card2);border-color:var(--border2);}
+.card-red-l{border-left:3px solid var(--red) !important;}
+
+/* SECTION HEADER */
+.sec-head{
+  font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:5px;
+  color:var(--muted2);display:flex;align-items:center;gap:12px;margin-bottom:16px;
+}
+.sec-head::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* TABLE */
+.bo-tbl{width:100%;border-collapse:collapse;}
+.bo-tbl th{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:3px;color:#444;text-align:left;padding:11px 16px;border-bottom:1px solid var(--border);}
+.bo-tbl td{padding:13px 16px;border-bottom:1px solid #111;font-size:13px;color:var(--off);font-family:'Barlow Condensed',sans-serif;letter-spacing:.3px;}
+.bo-tbl tr:hover td{background:var(--card2);}
+
+/* PILLS */
+.pill{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:3px;padding:3px 10px;display:inline-block;}
+.pill-red{background:rgba(232,25,44,.12);color:var(--red);border:1px solid rgba(232,25,44,.25);}
+.pill-green{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.2);}
+.pill-gold{background:rgba(240,165,0,.1);color:var(--gold);border:1px solid rgba(240,165,0,.2);}
+.pill-gray{background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border);}
+.pill-blue{background:rgba(59,130,246,.1);color:#60a5fa;border:1px solid rgba(59,130,246,.2);}
+.pill-purple{background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2);}
+
+/* BUTTONS */
+.btn{font-family:'Bebas Neue',sans-serif;letter-spacing:3px;font-size:14px;padding:11px 26px;border:none;cursor:pointer;transition:all .2s;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-red:hover{background:var(--red-dark);}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--muted);}
+.btn-ghost:hover{border-color:var(--red);color:#fff;}
+
+/* INPUTS */
+.bo-input{background:transparent;border:none;border-bottom:1px solid var(--border2);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:15px;letter-spacing:1px;padding:10px 0;width:100%;outline:none;transition:border-color .2s;}
+.bo-input:focus{border-bottom-color:var(--red);}
+.bo-input::placeholder{color:var(--muted2);}
+.bo-select{background:var(--card2);border:1px solid var(--border2);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:14px;padding:8px 12px;outline:none;cursor:pointer;}
+.field-label{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:4px;color:var(--muted);margin-bottom:6px;}
+
+/* GRID UTILS */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:3px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;}
+.grid-9{display:grid;grid-template-columns:repeat(9,1fr);gap:3px;}
+.mb-6{margin-bottom:6px;}.mb-12{margin-bottom:12px;}.mb-16{margin-bottom:16px;}.mb-24{margin-bottom:24px;}.mb-32{margin-bottom:32px;}
+.mt-auto{margin-top:auto;}
+.flex{display:flex;}.items-center{align-items:center;}.gap-3{gap:3px;}.gap-8{gap:8px;}.gap-12{gap:12px;}.gap-16{gap:16px;}.justify-between{justify-content:space-between;}
+.w-full{width:100%;}.flex-1{flex:1;}
+
+/* PROJECT CARDS */
+.proj-card{background:var(--card);border:1px solid var(--border);padding:26px;cursor:pointer;transition:background .2s;}
+.proj-card:hover{background:var(--card2);}
+.proj-num{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:4px;color:#2a2a2a;margin-bottom:10px;}
+.proj-title{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;line-height:1.1;margin-bottom:12px;}
+.proj-actions{display:flex;gap:3px;border-top:1px solid #1a1a1a;padding-top:14px;margin-top:14px;}
+.proj-act-btn{flex:1;font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:2px;padding:6px 4px;background:transparent;border:1px solid var(--border);color:#444;cursor:pointer;transition:all .15s;}
+.proj-act-btn:hover{border-color:var(--red);color:#fff;}
+
+/* TASK ITEMS */
+.task-item{background:var(--card);border:1px solid var(--border);padding:16px 20px;display:flex;align-items:center;gap:14px;margin-bottom:3px;}
+.task-check{width:20px;height:20px;border:2px solid var(--border2);background:transparent;cursor:pointer;flex-shrink:0;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.task-check.done{background:var(--green);border-color:var(--green);}
+.task-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:.5px;flex:1;}
+.task-title.done{text-decoration:line-through;color:var(--muted);}
+
+/* EMPTY STATE */
+.empty-state{background:var(--card);border:1px dashed var(--border);padding:80px 40px;text-align:center;}
+.empty-big{font-family:'Bebas Neue',sans-serif;font-size:52px;color:#141414;margin-bottom:12px;}
+.empty-sub{font-family:'Barlow Condensed',sans-serif;font-size:13px;color:#2a2a2a;letter-spacing:2px;margin-bottom:24px;}
+
+/* READY BANNER */
+.ready-banner{margin-top:20px;background:#0a0a0a;border:1px solid #1a1a1a;padding:16px 20px;display:flex;align-items:center;gap:14px;}
+.ready-bar{width:3px;height:40px;background:var(--red);flex-shrink:0;}
+.ready-title{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:4px;color:var(--red);margin-bottom:3px;}
+.ready-sub{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:#444;letter-spacing:1px;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:none;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:#0e0e0e;border:1px solid var(--border2);border-top:3px solid var(--red);padding:32px;min-width:480px;max-width:600px;width:90%;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;margin-bottom:24px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 20px;margin-bottom:24px;}
+.form-field{display:flex;flex-direction:column;gap:6px;}
+.form-field.full{grid-column:1/-1;}
+.modal-actions{display:flex;gap:8px;}
+
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:3px;margin-bottom:20px;flex-wrap:wrap;}
+.filter-tab{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:3px;padding:7px 14px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;}
+.filter-tab.active{background:var(--red);border-color:var(--red);color:#fff;}
+
+/* SPLITS */
+.split-bar{height:4px;border-radius:0;margin-top:8px;}
+
+/* ANALYTICS CHART */
+.chart-wrap{background:var(--card);border:1px solid var(--border);padding:24px;margin-bottom:3px;}
+.bar-chart{display:flex;align-items:flex-end;gap:8px;height:120px;margin-top:16px;}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+.bar{width:100%;background:var(--red);border-radius:0;transition:height .5s;min-height:2px;}
+.bar-lbl{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:2px;color:var(--muted);}
+.bar-val{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:1px;color:var(--off);}
+
+/* CONTACT CARD */
+.contact-card{background:var(--card);border:1px solid var(--border);padding:18px 20px;margin-bottom:3px;display:flex;align-items:center;gap:16px;cursor:pointer;}
+.contact-card:hover{background:var(--card2);}
+.contact-avatar{width:40px;height:40px;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--muted);flex-shrink:0;}
+.contact-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;letter-spacing:.5px;}
+.contact-role{font-family:'Barlow Condensed',sans-serif;font-size:12px;color:var(--muted);letter-spacing:.5px;}
+
+/* VAULT */
+.vault-item{background:var(--card);border:1px solid var(--border);border-left:3px solid transparent;padding:16px 20px;margin-bottom:3px;cursor:pointer;transition:all .2s;}
+.vault-item:hover{border-left-color:var(--red);background:var(--card2);}
+.vault-item-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px;}
+.vault-item-meta{font-family:'Barlow Condensed',sans-serif;font-size:11px;color:var(--muted);letter-spacing:1px;}
+
+/* GOAL PROGRESS */
+.goal-item{background:var(--card);border:1px solid var(--border);padding:20px 24px;margin-bottom:3px;}
+.goal-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px;}
+.goal-name{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;}
+.goal-nums{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;}
+.goal-track{height:4px;background:#1a1a1a;position:relative;}
+.goal-fill{height:100%;background:var(--red);transition:width 1s cubic-bezier(.25,.46,.45,.94);}
+
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:20px;}
+.cal-day-head{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:3px;color:#2a2a2a;text-align:center;padding:8px 0;}
+.cal-day{background:var(--card);border:1px solid var(--border);min-height:70px;padding:8px;font-family:'Bebas Neue',sans-serif;font-size:12px;color:#333;position:relative;}
+.cal-day.today{border-color:var(--red);color:var(--red);}
+.cal-event{font-family:'Barlow Condensed',sans-serif;font-size:10px;background:rgba(232,25,44,.15);border-left:2px solid var(--red);padding:2px 5px;margin-top:4px;color:var(--off);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+</style>
+</head>
+<body>
+
+<div id="app">
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-box">P</div>
+    <div class="logo-text">
+      <div class="t1">PUTYAHEARTINIT</div>
+      <div class="t2">Back Office</div>
+    </div>
+  </div>
+  <div class="red-bar"></div>
+  <nav id="nav"></nav>
+  <button class="collapse-btn" onclick="toggleSidebar()">← collapse</button>
+</aside>
+
+<!-- MAIN -->
+<div id="main">
+  <header id="topbar">
+    <div class="topbar-l">ARTIST OPERATING SYSTEM</div>
+    <div class="topbar-r">
+      <div class="live-dot"></div>
+      <span class="live-txt">LIVE</span>
+      <span class="live-txt">PUTYAHEARTINIT / STEVIE HARTS</span>
+    </div>
+  </header>
+  <div id="content">
+
+    <!-- ============ DASHBOARD ============ -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-eyebrow">ARTIST OPERATING SYSTEM</div>
+      <h1 class="page-title">COMMAND <em>CENTER</em></h1>
+      <div class="page-sub" id="dash-date"></div>
+
+      <div class="metrics metrics-4 mb-24">
+        <div class="metric"><div class="metric-l">Active Projects</div><div class="metric-v">2</div><div class="metric-s">Melodies + Finally Alive</div></div>
+        <div class="metric" style="--red:#f0a500"><div class="metric-l">Released Projects</div><div class="metric-v">7</div><div class="metric-s">PYHI + Stevie Harts</div></div>
+        <div class="metric" style="--red:#22c55e"><div class="metric-l">Total Tracks</div><div class="metric-v">66+</div><div class="metric-s">Full catalog</div></div>
+        <div class="metric" style="--red:#3b82f6"><div class="metric-l">Next Drop</div><div class="metric-v" style="font-size:28px">JUL 2026</div><div class="metric-s">Melodies from the Westside</div></div>
+      </div>
+
+      <div class="grid-3 mb-24">
+        <div class="bo-card" style="padding:22px">
+          <div class="sec-head">In Development</div>
+          <div style="background:#0c0c0c;border:1px solid #1a1a1a;border-left:3px solid #f59e0b;padding:14px;margin-bottom:3px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:.5px">Melodies from the Westside</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:#555;margin-top:3px">PYHI / Stevie Harts · Album · 2026</div>
+          </div>
+          <div style="background:#0c0c0c;border:1px solid #1a1a1a;border-left:3px solid #7c3aed;padding:14px">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:15px;letter-spacing:.5px">Finally Alive</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:#555;margin-top:3px">PUTYAHEARTINIT · Album · Oct 2026</div>
+          </div>
+        </div>
+
+        <div class="bo-card" style="padding:22px">
+          <div class="sec-head">Upcoming Deadlines</div>
+          <div id="deadlines-list"></div>
+        </div>
+
+        <div class="bo-card" style="padding:22px">
+          <div class="sec-head">Vote Campaign</div>
+          <div style="text-align:center;padding:20px 0">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:4px;color:var(--red);margin-bottom:8px">LIVE NOW</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;line-height:1" id="countdown-display">—</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:#444;letter-spacing:2px;margin-top:4px">DAYS UNTIL APRIL 17</div>
+            <div style="margin-top:16px;font-family:'Barlow Condensed',sans-serif;font-size:12px;color:#555">putyaheartinit.com/vote</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bo-card" style="padding:22px">
+        <div class="sec-head">Full Catalog — 9 Projects</div>
+        <div class="grid-9" id="catalog-snap"></div>
+      </div>
+    </div>
+
+    <!-- ============ PROJECT LIBRARY ============ -->
+    <div class="page" id="page-projects">
+      <div class="page-eyebrow">TIER 1 — FOUNDATION</div>
+      <h1 class="page-title">PROJECT <em>LIBRARY</em></h1>
+      <div class="page-sub">9 projects · PUTYAHEARTINIT + Stevie Harts</div>
+      <div class="filter-tabs" id="proj-filters">
+        <button class="filter-tab active" onclick="filterProjects('All',this)">All (9)</button>
+        <button class="filter-tab" onclick="filterProjects('Released',this)">Released (7)</button>
+        <button class="filter-tab" onclick="filterProjects('In Development',this)">In Development (2)</button>
+      </div>
+      <div id="proj-grid" class="grid-3"></div>
+    </div>
+
+    <!-- ============ RELEASED CATALOG ============ -->
+    <div class="page" id="page-catalog">
+      <div class="page-eyebrow">TIER 1 — FOUNDATION</div>
+      <h1 class="page-title">RELEASED <em>CATALOG</em></h1>
+      <div class="page-sub">7 released projects · 66+ tracks · ISRC tracking · DSP management</div>
+      <div class="metrics metrics-4 mb-16">
+        <div class="metric"><div class="metric-l">Released Projects</div><div class="metric-v">7</div></div>
+        <div class="metric"><div class="metric-l">Est. Total Tracks</div><div class="metric-v">66+</div></div>
+        <div class="metric"><div class="metric-l">DSP Platforms</div><div class="metric-v">4</div></div>
+        <div class="metric"><div class="metric-l">Years Active</div><div class="metric-v">7+</div></div>
+      </div>
+      <div class="bo-card">
+        <table class="bo-tbl">
+          <thead><tr>
+            <th>Project</th><th>Artist</th><th>Type</th><th>Year</th><th>Tracks</th><th>DSPs</th><th>ISRC</th><th>Sync</th><th>Status</th>
+          </tr></thead>
+          <tbody id="catalog-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ============ SPLITS ============ -->
+    <div class="page" id="page-splits">
+      <div class="page-eyebrow">TIER 1 — LAWSUIT PREVENTION</div>
+      <h1 class="page-title">SPLITS & <em>ROYALTIES</em></h1>
+      <div class="page-sub">Document every split on every track. Protect yourself before the money comes.</div>
+      <div class="filter-tabs" id="splits-proj-tabs"></div>
+      <div id="splits-project-header" class="bo-card card-red-l" style="padding:18px 22px;margin-bottom:3px"></div>
+      <div class="metrics metrics-2 mb-3" id="splits-totals"></div>
+      <div class="bo-card mb-3" id="splits-table-wrap">
+        <table class="bo-tbl"><thead><tr>
+          <th>Name / Entity</th><th>Role</th><th>Master %</th><th>Publishing %</th><th>PRO</th><th></th>
+        </tr></thead><tbody id="splits-tbody"></tbody></table>
+      </div>
+      <button class="btn btn-ghost w-full" onclick="openModal('add-split')" style="padding:14px;font-size:12px;letter-spacing:4px;border-style:dashed">+ ADD COLLABORATOR</button>
+    </div>
+
+    <!-- ============ TASKS ============ -->
+    <div class="page" id="page-tasks">
+      <div class="page-eyebrow">TIER 1 — FOUNDATION</div>
+      <h1 class="page-title">TASKS & <em>DEADLINES</em></h1>
+      <div class="page-sub" id="tasks-sub"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div class="filter-tabs" style="margin:0" id="task-filters">
+          <button class="filter-tab active" onclick="filterTasks('All',this)">All</button>
+          <button class="filter-tab" onclick="filterTasks('Open',this)">Open</button>
+          <button class="filter-tab" onclick="filterTasks('In Progress',this)">In Progress</button>
+          <button class="filter-tab" onclick="filterTasks('Done',this)">Done</button>
+          <button class="filter-tab" onclick="filterTasks('High',this)">High Priority</button>
+        </div>
+        <button class="btn btn-red" onclick="openModal('add-task')">+ NEW TASK</button>
+      </div>
+      <div id="tasks-list"></div>
+    </div>
+
+    <!-- ============ STREAMING ANALYTICS ============ -->
+    <div class="page" id="page-analytics">
+      <div class="page-eyebrow">TIER 2 — MONEY</div>
+      <h1 class="page-title">STREAMING <em>ANALYTICS</em></h1>
+      <div class="page-sub">Spotify · Apple Music · YouTube · Tidal — manual entry, one view</div>
+      <div class="metrics metrics-4 mb-16">
+        <div class="metric"><div class="metric-l">Monthly Listeners</div><div class="metric-v" id="stat-listeners">—</div><div class="metric-s">Spotify</div></div>
+        <div class="metric"><div class="metric-l">Total Streams</div><div class="metric-v" id="stat-streams">—</div><div class="metric-s">All platforms</div></div>
+        <div class="metric" style="--red:var(--green)"><div class="metric-l">Playlist Adds</div><div class="metric-v" id="stat-playlists">—</div><div class="metric-s">This month</div></div>
+        <div class="metric" style="--red:var(--gold)"><div class="metric-l">Top Track</div><div class="metric-v" style="font-size:18px" id="stat-top">—</div><div class="metric-s">By streams</div></div>
+      </div>
+      <div class="grid-2 mb-3">
+        <div class="chart-wrap">
+          <div class="sec-head">Monthly Streams — 2026</div>
+          <div class="bar-chart" id="streams-chart"></div>
+        </div>
+        <div class="chart-wrap">
+          <div class="sec-head">Platform Breakdown</div>
+          <div id="platform-bars" style="margin-top:16px"></div>
+        </div>
+      </div>
+      <div class="ready-banner"><div class="ready-bar"></div><div><div class="ready-title">Connect Your Numbers</div><div class="ready-sub">Update your streaming stats below to track growth week over week</div></div><button class="btn btn-red" style="margin-left:auto" onclick="openModal('add-stats')">+ UPDATE STATS</button></div>
+    </div>
+
+    <!-- ============ REVENUE ============ -->
+    <div class="page" id="page-revenue">
+      <div class="page-eyebrow">TIER 2 — MONEY</div>
+      <h1 class="page-title">REVENUE <em>TRACKER</em></h1>
+      <div class="page-sub">Every dollar across 9 revenue streams — monthly + YTD</div>
+      <div class="metrics metrics-4 mb-16" id="rev-metrics"></div>
+      <div class="bo-card mb-3">
+        <table class="bo-tbl"><thead><tr><th>Stream</th><th>Jan</th><th>Feb</th><th>Mar</th><th>Apr</th><th>YTD</th><th>vs Last Year</th></tr></thead>
+        <tbody id="rev-tbody"></tbody></table>
+      </div>
+      <button class="btn btn-red" onclick="openModal('add-revenue')">+ LOG REVENUE</button>
+    </div>
+
+    <!-- ============ FINANCIALS ============ -->
+    <div class="page" id="page-financials">
+      <div class="page-eyebrow">TIER 2 — MONEY</div>
+      <h1 class="page-title"><em>FINANCIALS</em></h1>
+      <div class="page-sub">Budget per project · P&L per release · Tax estimates · Cash flow</div>
+      <div class="empty-state"><div class="empty-big">START TRACKING</div><div class="empty-sub">Add your first budget entry to see P&L, cash flow, and tax estimates</div><button class="btn btn-ghost" onclick="openModal('add-budget')">+ ADD BUDGET ENTRY</button></div>
+      <div class="ready-banner mt-16"><div class="ready-bar"></div><div><div class="ready-title">Financials Module Ready</div><div class="ready-sub">Budget tracking, P&L per project, tax estimates, and cash flow visualization</div></div></div>
+    </div>
+
+    <!-- ============ D2C MANAGER ============ -->
+    <div class="page" id="page-d2c">
+      <div class="page-eyebrow">TIER 2 — MONEY</div>
+      <h1 class="page-title">D2C <em>MANAGER</em></h1>
+      <div class="page-sub">Drive-in tiers · Inventory · Fulfillment · Customer log</div>
+      <div class="metrics metrics-4 mb-16" id="d2c-metrics"></div>
+      <div id="d2c-tiers" class="mb-16"></div>
+      <div class="bo-card"><table class="bo-tbl"><thead><tr><th>Customer</th><th>Tier</th><th>Item</th><th>Amount</th><th>Date</th><th>Fulfilled</th></tr></thead><tbody id="d2c-tbody"><tr><td colspan="6" style="text-align:center;color:#2a2a2a;padding:40px;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;">NO ORDERS YET — FIRST INVITE JUST WENT OUT</td></tr></tbody></table></div>
+    </div>
+
+    <!-- ============ RELEASE CALENDAR ============ -->
+    <div class="page" id="page-calendar">
+      <div class="page-eyebrow">TIER 3 — OPERATIONS</div>
+      <h1 class="page-title">RELEASE <em>CALENDAR</em></h1>
+      <div class="page-sub">Music · Merch · Content · Events — all in one view</div>
+      <div id="calendar-view"></div>
+      <div class="ready-banner"><div class="ready-bar"></div><div><div class="ready-title">Calendar Module Ready</div><div class="ready-sub">Add events to build your release timeline. Key dates pre-loaded from your rollout plan.</div></div><button class="btn btn-red" style="margin-left:auto" onclick="openModal('add-event')">+ ADD EVENT</button></div>
+    </div>
+
+    <!-- ============ MARKETING ============ -->
+    <div class="page" id="page-marketing">
+      <div class="page-eyebrow">TIER 3 — OPERATIONS</div>
+      <h1 class="page-title">MARKETING <em>HUB</em></h1>
+      <div class="page-sub">Campaign tracker · Content calendar · Press outreach · Playlist submissions</div>
+      <div class="metrics metrics-3 mb-16">
+        <div class="metric"><div class="metric-l">Active Campaigns</div><div class="metric-v">1</div><div class="metric-s">Melodies — Vote Phase</div></div>
+        <div class="metric"><div class="metric-l">Press Pitched</div><div class="metric-v">0</div><div class="metric-s">Ready to start</div></div>
+        <div class="metric"><div class="metric-l">Playlists Submitted</div><div class="metric-v">0</div><div class="metric-s">DSP outreach pending</div></div>
+      </div>
+      <div class="sec-head">Active Campaigns</div>
+      <div class="bo-card card-red-l" style="padding:20px 24px;margin-bottom:3px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:18px;letter-spacing:.5px">Melodies from the Westside — Vote Campaign</div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:#555;margin-top:3px">Phase 1: Inner Circle Vote · Apr 7–17</div>
+          </div>
+          <span class="pill pill-red">LIVE</span>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:8px">
+          <span class="pill pill-green">Vote page live</span>
+          <span class="pill pill-green">Flyers distributed</span>
+          <span class="pill pill-gold">Awaiting votes</span>
+        </div>
+      </div>
+      <div class="ready-banner"><div class="ready-bar"></div><div><div class="ready-title">Marketing Hub Ready</div><div class="ready-sub">Add campaigns, track press outreach, log playlist submissions, manage content calendar</div></div><button class="btn btn-red" style="margin-left:auto" onclick="openModal('add-campaign')">+ NEW CAMPAIGN</button></div>
+    </div>
+
+    <!-- ============ CONTACTS ============ -->
+    <div class="page" id="page-contacts">
+      <div class="page-eyebrow">TIER 3 — OPERATIONS</div>
+      <h1 class="page-title">CONTACTS & <em>ROLODEX</em></h1>
+      <div class="page-sub">Producers · Engineers · DSP contacts · Press · Brands · Legal · Distribution</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div class="filter-tabs" style="margin:0">
+          <button class="filter-tab active">All</button>
+          <button class="filter-tab">Producers</button>
+          <button class="filter-tab">Press</button>
+          <button class="filter-tab">DSP</button>
+          <button class="filter-tab">Legal</button>
+          <button class="filter-tab">Brands</button>
+        </div>
+        <button class="btn btn-red" onclick="openModal('add-contact')">+ ADD CONTACT</button>
+      </div>
+      <div id="contacts-list">
+        <div class="contact-card"><div class="contact-avatar">BM</div><div><div class="contact-name">Harvey Mason Jr.</div><div class="contact-role">CEO — Recording Academy · Family Connection</div></div><span class="pill pill-gold" style="margin-left:auto">Key</span></div>
+        <div class="contact-card"><div class="contact-avatar">BB</div><div><div class="contact-name">Beatboy</div><div class="contact-role">Producer · Don't Forget EP</div></div><span class="pill pill-blue" style="margin-left:auto">Producer</span></div>
+      </div>
+      <div class="ready-banner" style="margin-top:12px"><div class="ready-bar"></div><div><div class="ready-title">Contacts Ready</div><div class="ready-sub">Build your industry rolodex — every relationship tracked and searchable</div></div></div>
+    </div>
+
+    <!-- ============ FAN CRM ============ -->
+    <div class="page" id="page-fancrm">
+      <div class="page-eyebrow">TIER 3 — OPERATIONS</div>
+      <h1 class="page-title">FAN <em>CRM</em></h1>
+      <div class="page-sub">Your most valuable asset — superfans, supporters, audience data</div>
+      <div class="metrics metrics-3 mb-16">
+        <div class="metric"><div class="metric-l">Total Fans Tracked</div><div class="metric-v">0</div><div class="metric-s">Vote page collecting now</div></div>
+        <div class="metric"><div class="metric-l">Superfans</div><div class="metric-v">0</div><div class="metric-s">D2C buyers + voters</div></div>
+        <div class="metric"><div class="metric-l">Email Subscribers</div><div class="metric-v">0</div><div class="metric-s">Build this list</div></div>
+      </div>
+      <div class="empty-state"><div class="empty-big">BUILD YOUR LIST</div><div class="empty-sub">Every vote page entry, D2C purchase, and email signup feeds this database</div><button class="btn btn-ghost" onclick="openModal('add-fan')">+ ADD FAN MANUALLY</button></div>
+    </div>
+
+    <!-- ============ SYNC ============ -->
+    <div class="page" id="page-sync">
+      <div class="page-eyebrow">TIER 4 — GROWTH</div>
+      <h1 class="page-title">SYNC & <em>LICENSING</em></h1>
+      <div class="page-sub">Turn your catalog into placement revenue — TV, Film, Ads, Games</div>
+      <div class="metrics metrics-4 mb-16">
+        <div class="metric"><div class="metric-l">Pitches Sent</div><div class="metric-v">0</div></div>
+        <div class="metric"><div class="metric-l">Placements Landed</div><div class="metric-v">0</div></div>
+        <div class="metric" style="--red:var(--green)"><div class="metric-l">Sync Revenue</div><div class="metric-v">$0</div></div>
+        <div class="metric"><div class="metric-l">Tracks Available</div><div class="metric-v">66+</div></div>
+      </div>
+      <div class="empty-state"><div class="empty-big">PITCH YOUR CATALOG</div><div class="empty-sub">Log every sync pitch, track responses, and record placements landed</div><button class="btn btn-ghost" onclick="openModal('add-sync')">+ LOG PITCH</button></div>
+    </div>
+
+    <!-- ============ BRANDS ============ -->
+    <div class="page" id="page-brands">
+      <div class="page-eyebrow">TIER 4 — GROWTH</div>
+      <h1 class="page-title">BRAND <em>PARTNERSHIPS</em></h1>
+      <div class="page-sub">Deals · Sponsorships · Endorsements · Partnership pipeline</div>
+      <div class="empty-state"><div class="empty-big">BUILD YOUR PIPELINE</div><div class="empty-sub">Track every brand conversation from prospecting to signed deal</div><button class="btn btn-ghost" onclick="openModal('add-brand')">+ ADD BRAND</button></div>
+    </div>
+
+    <!-- ============ TOURING ============ -->
+    <div class="page" id="page-touring">
+      <div class="page-eyebrow">TIER 4 — GROWTH</div>
+      <h1 class="page-title">TOURING & <em>LIVE</em></h1>
+      <div class="page-sub">Show tracker · Booking pipeline · P&L per event · Drive-in events</div>
+      <div class="metrics metrics-3 mb-16">
+        <div class="metric"><div class="metric-l">Shows Booked</div><div class="metric-v">0</div></div>
+        <div class="metric"><div class="metric-l">Drive-In Events</div><div class="metric-v">2</div><div class="metric-s">LA + ATL planned</div></div>
+        <div class="metric" style="--red:var(--green)"><div class="metric-l">Live Revenue</div><div class="metric-v">$0</div></div>
+      </div>
+      <div class="empty-state"><div class="empty-big">BOOK YOUR SHOWS</div><div class="empty-sub">Track every show — venue, guarantee, expenses, net P&L</div><button class="btn btn-ghost" onclick="openModal('add-show')">+ ADD SHOW</button></div>
+    </div>
+
+    <!-- ============ SOCIAL ============ -->
+    <div class="page" id="page-social">
+      <div class="page-eyebrow">TIER 4 — GROWTH</div>
+      <h1 class="page-title">SOCIAL <em>COMMAND</em></h1>
+      <div class="page-sub">All platforms in one view · Follower growth · Content pipeline</div>
+      <div class="metrics metrics-4 mb-16" id="social-metrics"></div>
+      <div class="ready-banner"><div class="ready-bar"></div><div><div class="ready-title">Social Command Ready</div><div class="ready-sub">Update follower counts and track growth week over week across all platforms</div></div><button class="btn btn-red" style="margin-left:auto" onclick="openModal('update-social')">UPDATE STATS</button></div>
+    </div>
+
+    <!-- ============ PUBLISHING ============ -->
+    <div class="page" id="page-publishing">
+      <div class="page-eyebrow">TIER 5 — PROTECTION</div>
+      <h1 class="page-title">PUBLISHING <em>ADMIN</em></h1>
+      <div class="page-sub">BMI/ASCAP registrations · Copyright filings · Work registration numbers</div>
+      <div class="empty-state"><div class="empty-big">REGISTER YOUR WORKS</div><div class="empty-sub">Log every copyright registration and PRO work registration by track</div><button class="btn btn-ghost" onclick="openModal('add-pub')">+ ADD REGISTRATION</button></div>
+    </div>
+
+    <!-- ============ LEGAL ============ -->
+    <div class="page" id="page-legal">
+      <div class="page-eyebrow">TIER 5 — PROTECTION</div>
+      <h1 class="page-title">LEGAL & <em>CONTRACTS</em></h1>
+      <div class="page-sub">Every agreement searchable — recording, features, producers, brands, licensing</div>
+      <div class="empty-state"><div class="empty-big">VAULT YOUR CONTRACTS</div><div class="empty-sub">Log every agreement with key terms, dates, and expiration tracking</div><button class="btn btn-ghost" onclick="openModal('add-contract')">+ ADD CONTRACT</button></div>
+    </div>
+
+    <!-- ============ ASSETS ============ -->
+    <div class="page" id="page-assets">
+      <div class="page-eyebrow">TIER 5 — PROTECTION</div>
+      <h1 class="page-title">CONTENT <em>ASSETS</em></h1>
+      <div class="page-sub">Photos · Videos · Graphics · Stems · Album art — organized by project</div>
+      <div class="empty-state"><div class="empty-big">ORGANIZE YOUR FILES</div><div class="empty-sub">Tag every asset by project and type — never lose a file again</div><button class="btn btn-ghost" onclick="openModal('add-asset')">+ ADD ASSET</button></div>
+    </div>
+
+    <!-- ============ VAULT ============ -->
+    <div class="page" id="page-vault">
+      <div class="page-eyebrow">TIER 5 — PROTECTION</div>
+      <h1 class="page-title">THE <em>VAULT</em></h1>
+      <div class="page-sub">Song ideas · Lyric drafts · Voice memos · Reference tracks · Business notes</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div class="filter-tabs" style="margin:0">
+          <button class="filter-tab active">All</button>
+          <button class="filter-tab">Lyrics</button>
+          <button class="filter-tab">Concepts</button>
+          <button class="filter-tab">Business</button>
+          <button class="filter-tab">References</button>
+        </div>
+        <button class="btn btn-red" onclick="openModal('add-vault')">+ NEW ENTRY</button>
+      </div>
+      <div id="vault-list">
+        <div class="vault-item"><div class="vault-item-title">Finally Alive — Rollout Game Concept</div><div class="vault-item-meta">Business · Apr 7 2026 · QR code → cryptic game → landing page</div></div>
+        <div class="vault-item"><div class="vault-item-title">Drive-In Theater World — Melodies</div><div class="vault-item-meta">Concept · Apr 7 2026 · Westside Drive-In transmission framework</div></div>
+        <div class="vault-item"><div class="vault-item-title">Two-Album Arc Strategy</div><div class="vault-item-meta">Business · Apr 7 2026 · Melodies summer → Finally Alive Halloween</div></div>
+      </div>
+    </div>
+
+    <!-- ============ GOALS ============ -->
+    <div class="page" id="page-goals">
+      <div class="page-eyebrow">TIER 5 — PROTECTION</div>
+      <h1 class="page-title">GOALS & <em>KPIs</em></h1>
+      <div class="page-sub">2026 targets with live progress tracking</div>
+      <div id="goals-list"></div>
+    </div>
+
+    <!-- ============ TEAM ============ -->
+    <div class="page" id="page-team">
+      <div class="page-eyebrow">TIER 5 — PROTECTION</div>
+      <h1 class="page-title">TEAM & <em>PAYROLL</em></h1>
+      <div class="page-sub">Who does what · Rates · What they're owed · Payment history</div>
+      <div class="empty-state"><div class="empty-big">BUILD YOUR TEAM</div><div class="empty-sub">Track every collaborator, contractor, and session player with rates and payment history</div><button class="btn btn-ghost" onclick="openModal('add-team')">+ ADD TEAM MEMBER</button></div>
+    </div>
+
+    <!-- ============ SAMPLES ============ -->
+    <div class="page" id="page-samples">
+      <div class="page-eyebrow">TIER 5 — PROTECTION</div>
+      <h1 class="page-title">SAMPLE <em>CLEARANCE</em></h1>
+      <div class="page-sub">Every sample used — clearance status, cost, contact, timeline</div>
+      <div class="empty-state"><div class="empty-big">PROTECT YOURSELF</div><div class="empty-sub">Log every sample before the money comes — track clearance status per track</div><button class="btn btn-ghost" onclick="openModal('add-sample')">+ LOG SAMPLE</button></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg" onclick="closeModal(event)">
+  <div class="modal" id="modal-box">
+    <div class="modal-title" id="modal-title"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+const CATALOG_DATA = [
+  {id:'hog',title:'Heart Of Gold',artist:'PUTYAHEARTINIT',type:'Album',year:2018,tracks:12,status:'Released',color:'#d4a017',dsps:['Spotify','Apple','Tidal']},
+  {id:'hos',title:'Heart Of The Streets',artist:'PUTYAHEARTINIT',type:'Album',year:2019,tracks:14,status:'Released',color:'#888',dsps:['Spotify','Apple']},
+  {id:'cs1',title:'Check The Score Vol. 1',artist:'PUTYAHEARTINIT',type:'Album',year:2020,tracks:10,status:'Released',color:'#2563eb',dsps:['Spotify','Apple','Tidal']},
+  {id:'cs2',title:'Check The Score Vol. 2',artist:'PUTYAHEARTINIT',type:'Album',year:2021,tracks:11,status:'Released',color:'#16a34a',dsps:['Spotify','Apple','Tidal']},
+  {id:'py',title:'PY EP',artist:'PUTYAHEARTINIT',type:'EP',year:2022,tracks:6,status:'Released',color:'#e8192c',dsps:['Spotify','Apple']},
+  {id:'ca',title:'Cardio Aktive EP',artist:'PUTYAHEARTINIT',type:'EP',year:2023,tracks:7,status:'Released',color:'#f97316',dsps:['Spotify','Apple','YouTube']},
+  {id:'df',title:"Don't Forget EP",artist:'Stevie Harts',type:'EP',year:2024,tracks:6,status:'Released',color:'#8b5cf6',dsps:['Spotify','Apple','Tidal','YouTube']},
+  {id:'mw',title:'Melodies from the Westside',artist:'PYHI / Stevie Harts',type:'Album',year:2026,tracks:13,status:'In Development',color:'#f59e0b',dsps:[]},
+  {id:'fa',title:'Finally Alive',artist:'PUTYAHEARTINIT',type:'Album',year:2026,tracks:12,status:'In Development',color:'#7c3aed',dsps:[]},
+]
+
+let SPLITS = {
+  hog:[{name:'Stevie Harts / PUTYAHEARTINIT',role:'Artist / Songwriter',master:100,publishing:50,pro:'BMI'}],
+  mw:[{name:'Stevie Harts / PUTYAHEARTINIT',role:'Artist / Songwriter',master:100,publishing:50,pro:'BMI'}],
+}
+CATALOG_DATA.forEach(p=>{ if(!SPLITS[p.id]) SPLITS[p.id]=[] })
+
+let TASKS = [
+  {id:1,title:'Close vote page & tally results',project:'Melodies from the Westside',due:'2026-04-17',priority:'High',status:'Open',notes:'Vote closes April 17'},
+  {id:2,title:'Pick lead single based on votes',project:'Melodies from the Westside',due:'2026-04-18',priority:'High',status:'Open',notes:''},
+  {id:3,title:'Begin Phase 1 — Frequency Found',project:'Melodies from the Westside',due:'2026-05-01',priority:'Medium',status:'Open',notes:'Drive-in world building starts'},
+  {id:4,title:'Generate all 13 paintings in Midjourney',project:'Melodies from the Westside',due:'2026-05-15',priority:'Medium',status:'Open',notes:'Use art bible prompts'},
+  {id:5,title:'Set up D2C store — all 5 tiers',project:'Melodies from the Westside',due:'2026-05-01',priority:'High',status:'Open',notes:'Postcard $5 → Commission $500'},
+  {id:6,title:'Book drive-in venue — Los Angeles',project:'Melodies from the Westside',due:'2026-06-01',priority:'Medium',status:'Open',notes:''},
+  {id:7,title:'Book drive-in venue — Atlanta',project:'Melodies from the Westside',due:'2026-06-01',priority:'Medium',status:'Open',notes:''},
+  {id:8,title:'Finalize back office with advisors',project:'System',due:'2026-04-20',priority:'High',status:'Open',notes:''},
+  {id:9,title:'Confirm 13th/14th track',project:'Melodies from the Westside',due:'2026-04-25',priority:'High',status:'Open',notes:'TBD slot needs locking'},
+  {id:10,title:'Begin Finally Alive rollout planning',project:'Finally Alive',due:'2026-09-01',priority:'Low',status:'Open',notes:'Dark switchover from Melodies world'},
+]
+
+let taskFilter = 'All'
+let splitProject = 0
+const GOALS = [
+  {name:'Monthly Streams',target:100000,current:0,unit:'',color:'#e8192c'},
+  {name:'D2C Revenue — Melodies',target:18675,current:0,unit:'$',color:'#f0a500'},
+  {name:'Instagram Followers',target:50000,current:0,unit:'',color:'#3b82f6'},
+  {name:'Sync Placements',target:5,current:0,unit:'',color:'#22c55e'},
+  {name:'Press Features',target:10,current:0,unit:'',color:'#8b5cf6'},
+  {name:'Show Bookings',target:12,current:0,unit:'',color:'#f97316'},
+]
+
+// ===================== NAV =====================
+const NAV = [
+  {tier:1,tc:'#e8192c',label:'Foundation',items:[
+    {id:'dashboard',icon:'⬛',label:'Dashboard'},
+    {id:'projects',icon:'📁',label:'Project Library'},
+    {id:'catalog',icon:'🎵',label:'Released Catalog'},
+    {id:'splits',icon:'⚖️',label:'Splits & Royalties'},
+    {id:'tasks',icon:'✅',label:'Tasks & Deadlines'},
+  ]},
+  {tier:2,tc:'#f0a500',label:'Money',items:[
+    {id:'analytics',icon:'📊',label:'Streaming Analytics'},
+    {id:'revenue',icon:'💰',label:'Revenue Tracker'},
+    {id:'financials',icon:'📈',label:'Financials'},
+    {id:'d2c',icon:'🛒',label:'D2C Manager'},
+  ]},
+  {tier:3,tc:'#3b82f6',label:'Operations',items:[
+    {id:'calendar',icon:'📅',label:'Release Calendar'},
+    {id:'marketing',icon:'📣',label:'Marketing Hub'},
+    {id:'contacts',icon:'🤝',label:'Contacts'},
+    {id:'fancrm',icon:'❤️',label:'Fan CRM'},
+  ]},
+  {tier:4,tc:'#22c55e',label:'Growth',items:[
+    {id:'sync',icon:'🎬',label:'Sync & Licensing'},
+    {id:'brands',icon:'🏷️',label:'Brand Partnerships'},
+    {id:'touring',icon:'🎤',label:'Touring & Live'},
+    {id:'social',icon:'📱',label:'Social Command'},
+  ]},
+  {tier:5,tc:'#8b5cf6',label:'Protection',items:[
+    {id:'publishing',icon:'©️',label:'Publishing Admin'},
+    {id:'legal',icon:'📜',label:'Legal & Contracts'},
+    {id:'assets',icon:'🗂️',label:'Content Assets'},
+    {id:'vault',icon:'🔐',label:'Vault'},
+    {id:'goals',icon:'🎯',label:'Goals & KPIs'},
+    {id:'team',icon:'👥',label:'Team & Payroll'},
+    {id:'samples',icon:'🛡️',label:'Sample Clearance'},
+  ]},
+]
+
+function buildNav(){
+  const nav=document.getElementById('nav')
+  NAV.forEach(tier=>{
+    const lbl=document.createElement('div')
+    lbl.className='tier-label'
+    lbl.style.color=tier.tc
+    lbl.textContent=`T${tier.tier} — ${tier.label}`
+    nav.appendChild(lbl)
+    tier.items.forEach(item=>{
+      const el=document.createElement('div')
+      el.className='nav-item'+(item.id==='dashboard'?' active':'')
+      el.id='nav-'+item.id
+      el.innerHTML=`<span class="nav-icon">${item.icon}</span><span class="nav-lbl">${item.label}</span>`
+      el.onclick=()=>showPage(item.id)
+      nav.appendChild(el)
+    })
+  })
+}
+
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'))
+  const page=document.getElementById('page-'+id)
+  if(page) page.classList.add('active')
+  const nav=document.getElementById('nav-'+id)
+  if(nav) nav.classList.add('active')
+  // Re-render dynamic pages
+  if(id==='tasks') renderTasks()
+  if(id==='splits') renderSplits()
+  if(id==='goals') renderGoals()
+  if(id==='social') renderSocial()
+  if(id==='d2c') renderD2C()
+  if(id==='revenue') renderRevenue()
+  if(id==='analytics') renderAnalytics()
+  if(id==='calendar') renderCalendar()
+}
+
+// ===================== SIDEBAR =====================
+let sidebarCollapsed=false
+function toggleSidebar(){
+  sidebarCollapsed=!sidebarCollapsed
+  const s=document.getElementById('sidebar')
+  const btn=s.querySelector('.collapse-btn')
+  s.classList.toggle('collapsed',sidebarCollapsed)
+  btn.textContent=sidebarCollapsed?'→':'← collapse'
+}
+
+// ===================== DASHBOARD =====================
+function initDashboard(){
+  document.getElementById('dash-date').textContent=
+    new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'}).toUpperCase()
+
+  // Countdown
+  const target=new Date('2026-04-17')
+  const now=new Date()
+  const days=Math.max(0,Math.ceil((target-now)/(1000*60*60*24)))
+  document.getElementById('countdown-display').textContent=days
+
+  // Deadlines
+  const dl=[
+    {date:'APR 17',item:'Vote page closes',project:'Melodies',urgent:true},
+    {date:'APR 18',item:'Pick lead single',project:'Melodies',urgent:true},
+    {date:'MAY 1',item:'Phase 1 — Frequency Found',project:'Melodies',urgent:false},
+    {date:'JUL 2026',item:'DSP Release',project:'Melodies',urgent:false},
+    {date:'OCT 2026',item:'Finally Alive drop',project:'Finally Alive',urgent:false},
+  ]
+  document.getElementById('deadlines-list').innerHTML=dl.map(d=>`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #0f0f0f">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;color:${d.urgent?'#e8192c':'#555'};min-width:52px">${d.date}</div>
+      <div style="flex:1"><div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:${d.urgent?'#fff':'#888'}">${d.item}</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:#444;letter-spacing:1px">${d.project}</div></div>
+      ${d.urgent?'<div style="width:6px;height:6px;border-radius:50%;background:#e8192c;box-shadow:0 0 6px #e8192c"></div>':''}
+    </div>`).join('')
+
+  // Catalog snap
+  document.getElementById('catalog-snap').innerHTML=CATALOG_DATA.map(p=>`
+    <div style="background:#0c0c0c;border:1px solid #1a1a1a;border-top:3px solid ${p.color};padding:10px 8px;cursor:pointer" onclick="showPage('projects')">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:#ccc;line-height:1.2;margin-bottom:4px">${p.title}</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:2px;color:#333">${p.year}</div>
+    </div>`).join('')
+}
+
+// ===================== PROJECTS =====================
+function renderProjects(filter='All'){
+  const data=filter==='All'?CATALOG_DATA:CATALOG_DATA.filter(p=>p.status===filter)
+  const sc={Released:'#22c55e','In Development':'#f0a500'}
+  document.getElementById('proj-grid').innerHTML=data.map((p,i)=>`
+    <div class="proj-card" style="border-top:4px solid ${p.color}">
+      <div class="proj-num">${p.artist.toUpperCase()}</div>
+      <div class="proj-title">${p.title}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span class="pill" style="background:${sc[p.status]}18;color:${sc[p.status]};border:1px solid ${sc[p.status]}33">${p.status}</span>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:#444;letter-spacing:1px">${p.type} · ${p.year}</span>
+      </div>
+      <div class="proj-actions">
+        <button class="proj-act-btn">Tracks</button>
+        <button class="proj-act-btn" onclick="showPage('splits')">Splits</button>
+        <button class="proj-act-btn" onclick="showPage('marketing')">Marketing</button>
+        <button class="proj-act-btn" onclick="showPage('assets')">Files</button>
+      </div>
+    </div>`).join('')+`
+    <div class="proj-card" style="border:1px dashed #1c1c1c;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:200px;gap:12px" 
+      onmouseenter="this.style.borderColor='#e8192c'" onmouseleave="this.style.borderColor='#1c1c1c'">
+      <div style="font-size:28px;color:#1c1c1c">+</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:4px;color:#2a2a2a">NEW PROJECT</div>
+    </div>`
+}
+
+function filterProjects(filter,btn){
+  document.querySelectorAll('#proj-filters .filter-tab').forEach(b=>b.classList.remove('active'))
+  btn.classList.add('active')
+  renderProjects(filter)
+}
+
+// ===================== CATALOG =====================
+function renderCatalog(){
+  const released=CATALOG_DATA.filter(p=>p.status==='Released')
+  document.getElementById('catalog-tbody').innerHTML=released.map(r=>`
+    <tr>
+      <td style="font-weight:700;color:#fff;font-size:14px">${r.title}</td>
+      <td>${r.artist}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:11px">${r.type}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px">${r.year}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:18px">${r.tracks}</td>
+      <td>${r.dsps.map(d=>`<span style="font-family:'Bebas Neue',sans-serif;font-size:8px;letter-spacing:2px;background:#131313;border:1px solid #222;color:#555;padding:2px 6px;margin-right:3px">${d}</span>`).join('')}</td>
+      <td style="color:#2a2a2a;font-style:italic;font-size:12px">Add →</td>
+      <td><span class="pill pill-gold">NOT PITCHED</span></td>
+      <td><span class="pill pill-green">ACTIVE</span></td>
+    </tr>`).join('')
+}
+
+// ===================== SPLITS =====================
+function renderSplits(){
+  const proj=CATALOG_DATA[splitProject]
+  const tabs=document.getElementById('splits-proj-tabs')
+  tabs.innerHTML=CATALOG_DATA.map((p,i)=>`
+    <button class="filter-tab${i===splitProject?' active':''}" onclick="setSplitProject(${i})" style="font-size:11px;padding:6px 12px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title}</button>`).join('')
+  document.getElementById('splits-project-header').innerHTML=`
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px">${proj.title}</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:#555;margin-top:3px">${proj.artist} · ${proj.type} · ${proj.year}</div>`
+  const sp=SPLITS[proj.id]||[]
+  const mt=sp.reduce((a,b)=>a+b.master,0)
+  const pt=sp.reduce((a,b)=>a+b.publishing,0)
+  document.getElementById('splits-totals').innerHTML=`
+    <div class="metric" style="--red:${mt===100?'#22c55e':'#e8192c'}"><div class="metric-l">Master Split Total</div><div class="metric-v" style="color:${mt===100?'#22c55e':'#e8192c'}">${mt}%</div><div class="metric-s">${mt===100?'✓ Balanced':`${100-mt}% unallocated`}</div></div>
+    <div class="metric" style="--red:${pt===100?'#22c55e':'#f0a500'}"><div class="metric-l">Publishing Split Total</div><div class="metric-v" style="color:${pt===100?'#22c55e':'#f0a500'}">${pt}%</div><div class="metric-s">${pt===100?'✓ Balanced':`${100-pt}% unallocated`}</div></div>`
+  document.getElementById('splits-tbody').innerHTML=sp.length?sp.map((s,i)=>`
+    <tr>
+      <td style="font-weight:700;color:#fff;font-size:14px">${s.name}</td>
+      <td>${s.role}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#e8192c">${s.master}%</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:#f0a500">${s.publishing}%</td>
+      <td style="font-family:'Bebas Neue',sans-serif;letter-spacing:2px;font-size:11px">${s.pro}</td>
+      <td><button onclick="removeSplit(${i})" style="background:transparent;border:none;color:#333;cursor:pointer;font-size:14px">✕</button></td>
+    </tr>`).join(''):`<tr><td colspan="6" style="text-align:center;color:#2a2a2a;padding:32px;font-family:'Bebas Neue',sans-serif;letter-spacing:3px">NO SPLITS ADDED YET</td></tr>`
+}
+
+function setSplitProject(i){splitProject=i;renderSplits()}
+function removeSplit(i){const pid=CATALOG_DATA[splitProject].id;SPLITS[pid].splice(i,1);renderSplits()}
+
+// ===================== TASKS =====================
+const priColor={High:'#e8192c',Medium:'#f0a500',Low:'#555'}
+const stColor={Open:'#3b82f6','In Progress':'#f0a500',Done:'#22c55e'}
+
+function renderTasks(){
+  const f=taskFilter
+  const filtered=f==='All'?TASKS:f==='High'?TASKS.filter(t=>t.priority===f):TASKS.filter(t=>t.status===f)
+  const open=TASKS.filter(t=>t.status!=='Done').length
+  document.getElementById('tasks-sub').textContent=`${open} open · ${TASKS.filter(t=>t.status==='Done').length} complete`
+  document.getElementById('tasks-list').innerHTML=filtered.map(t=>`
+    <div class="task-item" style="border-left:3px solid ${priColor[t.priority]};opacity:${t.status==='Done'?.4:1}">
+      <div class="task-check${t.status==='Done'?' done':''}" onclick="toggleTask(${t.id})">${t.status==='Done'?'✓':''}</div>
+      <div style="flex:1">
+        <div class="task-title${t.status==='Done'?' done':''}">${t.title}</div>
+        ${t.notes?`<div style="font-size:12px;color:#555;font-style:italic;margin-top:2px">${t.notes}</div>`:''}
+      </div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:#555;min-width:180px">${t.project}</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;color:#555;min-width:80px">${t.due}</div>
+      <span class="pill" style="background:${stColor[t.status]}18;color:${stColor[t.status]};border:1px solid ${stColor[t.status]}33">${t.status}</span>
+    </div>`).join('')||`<div style="text-align:center;padding:40px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:4px;color:#222">NO TASKS IN THIS FILTER</div>`
+}
+
+function filterTasks(f,btn){
+  taskFilter=f
+  document.querySelectorAll('#task-filters .filter-tab').forEach(b=>b.classList.remove('active'))
+  btn.classList.add('active')
+  renderTasks()
+}
+
+function toggleTask(id){
+  const t=TASKS.find(t=>t.id===id)
+  if(t) t.status=t.status==='Done'?'Open':'Done'
+  renderTasks()
+}
+
+// ===================== GOALS =====================
+function renderGoals(){
+  document.getElementById('goals-list').innerHTML=GOALS.map((g,i)=>{
+    const pct=g.target>0?Math.min(100,Math.round(g.current/g.target*100)):0
+    return`<div class="goal-item">
+      <div class="goal-header">
+        <div class="goal-name">${g.name}</div>
+        <div class="goal-nums" style="color:${g.color}">${g.unit}${g.current.toLocaleString()} <span style="font-size:14px;color:#444">/ ${g.unit}${g.target.toLocaleString()}</span></div>
+      </div>
+      <div class="goal-track"><div class="goal-fill" style="width:${pct}%;background:${g.color}"></div></div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:#444;margin-top:6px;letter-spacing:1px">${pct}% to target · 2026 GOAL</div>
+    </div>`}).join('')
+}
+
+// ===================== SOCIAL =====================
+function renderSocial(){
+  const platforms=[
+    {name:'Instagram',handle:'@putyaheartinit',followers:'—',color:'#e8192c'},
+    {name:'TikTok',handle:'@putyaheartinit',followers:'—',color:'#f0a500'},
+    {name:'YouTube',handle:'PUTYAHEARTINIT',followers:'—',color:'#3b82f6'},
+    {name:'Twitter / X',handle:'@putyaheartinit',followers:'—',color:'#22c55e'},
+  ]
+  document.getElementById('social-metrics').innerHTML=platforms.map(p=>`
+    <div class="metric" style="--red:${p.color}">
+      <div class="metric-l">${p.name}</div>
+      <div class="metric-v">${p.followers}</div>
+      <div class="metric-s">${p.handle}</div>
+    </div>`).join('')
+}
+
+// ===================== D2C =====================
+function renderD2C(){
+  const tiers=[
+    {name:'The Postcard',price:'$5–10',desc:'Digital album + 1 painting + early access',sold:0,total:100,color:'#3b82f6'},
+    {name:'The Painting',price:'$25–45',desc:'Physical print + voice note + community',sold:0,total:50,color:'#22c55e'},
+    {name:'The Collection',price:'$75–120',desc:'All 13 prints signed + album credits + vote',sold:0,total:20,color:'#f0a500'},
+    {name:'Drive-In Ticket',price:'$50–75',desc:'Event entry + exclusive 14th painting',sold:0,total:75,color:'#e8192c'},
+    {name:'The Commission',price:'$200–500',desc:'Custom painting (limited to 13)',sold:0,total:13,color:'#8b5cf6'},
+  ]
+  const totalRev=0
+  document.getElementById('d2c-metrics').innerHTML=`
+    <div class="metric"><div class="metric-l">Total Revenue</div><div class="metric-v">$0</div><div class="metric-s">D2C opens soon</div></div>
+    <div class="metric"><div class="metric-l">Units Sold</div><div class="metric-v">0</div></div>
+    <div class="metric" style="--red:#f0a500"><div class="metric-l">Est. Revenue Potential</div><div class="metric-v" style="font-size:28px">$18,675</div><div class="metric-s">Conservative estimate</div></div>
+    <div class="metric" style="--red:#22c55e"><div class="metric-l">Commission Slots</div><div class="metric-v">13</div><div class="metric-s">$200–500 each</div></div>`
+  document.getElementById('d2c-tiers').innerHTML=`<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px">
+    ${tiers.map(t=>`<div style="background:#0f0f0f;border:1px solid #1c1c1c;border-top:3px solid ${t.color};padding:18px 16px">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;margin-bottom:4px">${t.name}</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;color:${t.color};margin-bottom:8px">${t.price}</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:#555;margin-bottom:12px;line-height:1.4">${t.desc}</div>
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;color:#444">${t.sold}/${t.total} sold</div>
+      <div style="height:3px;background:#1a1a1a;margin-top:6px"><div style="height:100%;background:${t.color};width:${t.total>0?t.sold/t.total*100:0}%"></div></div>
+    </div>`).join('')}
+  </div>`
+}
+
+// ===================== REVENUE =====================
+function renderRevenue(){
+  const streams=[
+    {name:'Streaming Royalties',jan:0,feb:0,mar:0,apr:0},
+    {name:'D2C Sales',jan:0,feb:0,mar:0,apr:0},
+    {name:'Merch',jan:0,feb:0,mar:0,apr:0},
+    {name:'Sync Licensing',jan:0,feb:0,mar:0,apr:0},
+    {name:'Live / Events',jan:0,feb:0,mar:0,apr:0},
+    {name:'Brand Deals',jan:0,feb:0,mar:0,apr:0},
+    {name:'Features / Collabs',jan:0,feb:0,mar:0,apr:0},
+    {name:'Publishing',jan:0,feb:0,mar:0,apr:0},
+    {name:'YouTube AdSense',jan:0,feb:0,mar:0,apr:0},
+  ]
+  document.getElementById('rev-metrics').innerHTML=`
+    <div class="metric"><div class="metric-l">YTD Revenue</div><div class="metric-v">$0</div><div class="metric-s">All streams</div></div>
+    <div class="metric"><div class="metric-l">This Month</div><div class="metric-v">$0</div></div>
+    <div class="metric" style="--red:#f0a500"><div class="metric-l">D2C Potential</div><div class="metric-v" style="font-size:28px">$18,675</div></div>
+    <div class="metric" style="--red:#22c55e"><div class="metric-l">Revenue Streams</div><div class="metric-v">9</div></div>`
+  document.getElementById('rev-tbody').innerHTML=streams.map(s=>{
+    const ytd=s.jan+s.feb+s.mar+s.apr
+    return`<tr>
+      <td style="font-weight:700;color:#fff;font-size:14px">${s.name}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#555">$${s.jan}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#555">$${s.feb}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#555">$${s.mar}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:#555">$${s.apr}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff">$${ytd}</td>
+      <td style="color:#444;font-style:italic;font-size:12px">—</td>
+    </tr>`}).join('')
+}
+
+// ===================== ANALYTICS =====================
+function renderAnalytics(){
+  const months=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC']
+  const vals=[0,0,0,0,0,0,0,0,0,0,0,0]
+  const max=Math.max(...vals,1)
+  document.getElementById('streams-chart').innerHTML=months.map((m,i)=>`
+    <div class="bar-col">
+      <div class="bar-val">${vals[i]>0?vals[i].toLocaleString():''}</div>
+      <div class="bar" style="height:${Math.max(2,(vals[i]/max)*100)}px"></div>
+      <div class="bar-lbl">${m}</div>
+    </div>`).join('')
+  const plats=[
+    {name:'Spotify',pct:60,color:'#22c55e'},
+    {name:'Apple Music',pct:25,color:'#e8192c'},
+    {name:'YouTube',pct:10,color:'#f0a500'},
+    {name:'Tidal',pct:5,color:'#3b82f6'},
+  ]
+  document.getElementById('platform-bars').innerHTML=plats.map(p=>`
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:#888">${p.name}</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;color:#555">${p.pct}%</span>
+      </div>
+      <div style="height:3px;background:#1a1a1a"><div style="height:100%;background:${p.color};width:${p.pct}%"></div></div>
+    </div>`).join('')
+}
+
+// ===================== CALENDAR =====================
+function renderCalendar(){
+  const events=[
+    {date:'2026-04-17',label:'Vote Page Closes',color:'#e8192c'},
+    {date:'2026-05-01',label:'Phase 1 — Frequency Found',color:'#f0a500'},
+    {date:'2026-06-15',label:'Phase 3 — Double Feature',color:'#f0a500'},
+    {date:'2026-07-04',label:'MELODIES DSP DROP',color:'#22c55e'},
+    {date:'2026-10-31',label:'FINALLY ALIVE DROP',color:'#8b5cf6'},
+  ]
+  const now=new Date()
+  const year=now.getFullYear();const month=now.getMonth()
+  const firstDay=new Date(year,month,1).getDay()
+  const daysInMonth=new Date(year,month+1,0).getDate()
+  const monthName=now.toLocaleDateString('en-US',{month:'long',year:'numeric'}).toUpperCase()
+  const dayNames=['SUN','MON','TUE','WED','THU','FRI','SAT']
+  let cal=`<div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;color:#fff;margin-bottom:16px">${monthName}</div>
+  <div class="cal-grid">${dayNames.map(d=>`<div class="cal-day-head">${d}</div>`).join('')}`
+  for(let i=0;i<firstDay;i++) cal+=`<div class="cal-day" style="opacity:.2"></div>`
+  for(let d=1;d<=daysInMonth;d++){
+    const isToday=d===now.getDate()
+    const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`
+    const ev=events.filter(e=>e.date===dateStr)
+    cal+=`<div class="cal-day${isToday?' today':''}">${d}${ev.map(e=>`<div class="cal-event" style="border-left-color:${e.color}">${e.label}</div>`).join('')}</div>`
+  }
+  cal+=`</div>`
+  document.getElementById('calendar-view').innerHTML=cal
+}
+
+// ===================== MODAL =====================
+const MODALS={
+  'add-task':{title:'NEW TASK',body:`
+    <div class="form-grid">
+      <div class="form-field full"><div class="field-label">Task Title</div><input class="bo-input" id="m-title" placeholder="Task name..."></div>
+      <div class="form-field full"><div class="field-label">Notes</div><input class="bo-input" id="m-notes" placeholder="Additional context..."></div>
+      <div class="form-field"><div class="field-label">Project</div>
+        <select class="bo-select w-full" id="m-proj">${CATALOG_DATA.map(p=>`<option>${p.title}</option>`).join('')}<option>System</option></select></div>
+      <div class="form-field"><div class="field-label">Due Date</div><input class="bo-input" type="date" id="m-due"></div>
+      <div class="form-field"><div class="field-label">Priority</div>
+        <select class="bo-select w-full" id="m-pri"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+      <div class="form-field"><div class="field-label">Status</div>
+        <select class="bo-select w-full" id="m-stat"><option>Open</option><option>In Progress</option></select></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-red" onclick="saveTask()">ADD TASK</button>
+      <button class="btn btn-ghost" onclick="closeModal()">CANCEL</button>
+    </div>`},
+  'add-split':{title:'ADD COLLABORATOR',body:`
+    <div class="form-grid">
+      <div class="form-field full"><div class="field-label">Name / Entity</div><input class="bo-input" id="s-name" placeholder="Legal name or entity..."></div>
+      <div class="form-field"><div class="field-label">Role</div><input class="bo-input" id="s-role" placeholder="Producer, Songwriter..."></div>
+      <div class="form-field"><div class="field-label">PRO Affiliation</div><select class="bo-select w-full" id="s-pro"><option>BMI</option><option>ASCAP</option><option>SESAC</option><option>None</option></select></div>
+      <div class="form-field"><div class="field-label">Master %</div><input class="bo-input" id="s-master" type="number" min="0" max="100" placeholder="0"></div>
+      <div class="form-field"><div class="field-label">Publishing %</div><input class="bo-input" id="s-pub" type="number" min="0" max="100" placeholder="0"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-red" onclick="saveSplit()">ADD</button>
+      <button class="btn btn-ghost" onclick="closeModal()">CANCEL</button>
+    </div>`},
+  'add-vault':{title:'NEW VAULT ENTRY',body:`
+    <div class="form-grid">
+      <div class="form-field full"><div class="field-label">Title</div><input class="bo-input" id="v-title" placeholder="Song idea, lyric, note..."></div>
+      <div class="form-field"><div class="field-label">Category</div>
+        <select class="bo-select w-full" id="v-cat"><option>Lyrics</option><option>Concepts</option><option>Business</option><option>References</option></select></div>
+      <div class="form-field"><div class="field-label">Tags</div><input class="bo-input" id="v-tags" placeholder="Melodies, hook, bridge..."></div>
+      <div class="form-field full"><div class="field-label">Content / Notes</div><textarea class="bo-input" id="v-body" rows="4" style="resize:vertical" placeholder="Write here..."></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-red" onclick="saveVault()">SAVE TO VAULT</button>
+      <button class="btn btn-ghost" onclick="closeModal()">CANCEL</button>
+    </div>`},
+}
+
+function openModal(id){
+  const m=MODALS[id]||{title:id.replace(/-/g,' ').toUpperCase(),body:'<div style="color:#555;font-family:'Barlow Condensed',sans-serif;padding:20px 0">This form is ready to be built out.<br>Data entry coming in the next build pass.</div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal()">CLOSE</button></div>'}
+  document.getElementById('modal-title').textContent=m.title
+  document.getElementById('modal-body').innerHTML=m.body
+  document.getElementById('modal-bg').classList.add('open')
+}
+function closeModal(e){
+  if(!e||e.target===document.getElementById('modal-bg'))
+    document.getElementById('modal-bg').classList.remove('open')
+}
+
+function saveTask(){
+  const title=document.getElementById('m-title').value.trim()
+  if(!title) return
+  TASKS.push({id:Date.now(),title,project:document.getElementById('m-proj').value,due:document.getElementById('m-due').value,priority:document.getElementById('m-pri').value,status:document.getElementById('m-stat').value,notes:document.getElementById('m-notes').value})
+  closeModal()
+  renderTasks()
+}
+
+function saveSplit(){
+  const name=document.getElementById('s-name').value.trim()
+  if(!name) return
+  const pid=CATALOG_DATA[splitProject].id
+  if(!SPLITS[pid]) SPLITS[pid]=[]
+  SPLITS[pid].push({name,role:document.getElementById('s-role').value,master:Number(document.getElementById('s-master').value)||0,publishing:Number(document.getElementById('s-pub').value)||0,pro:document.getElementById('s-pro').value})
+  closeModal()
+  renderSplits()
+}
+
+function saveVault(){
+  const title=document.getElementById('v-title').value.trim()
+  if(!title) return
+  const list=document.getElementById('vault-list')
+  const date=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+  const el=document.createElement('div')
+  el.className='vault-item'
+  el.innerHTML=`<div class="vault-item-title">${title}</div><div class="vault-item-meta">${document.getElementById('v-cat').value} · ${date} · ${document.getElementById('v-tags').value||'Untagged'}</div>`
+  list.prepend(el)
+  closeModal()
+}
+
+// ===================== INIT =====================
+buildNav()
+initDashboard()
+renderProjects()
+renderCatalog()
+renderSplits()
+renderTasks()
+renderGoals()
+renderSocial()
+renderD2C()
+renderRevenue()
+renderAnalytics()
+renderCalendar()
+</script>
+</body>
+</html>
