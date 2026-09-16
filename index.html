@@ -136,6 +136,13 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 
 /* ═══ PRODUCTS ═══ */
 .products{padding:100px 0;background:var(--black);border-top:1px solid rgba(255,255,255,0.04)}
+.available-now{padding:72px 0;background:var(--black);border-top:1px solid rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.04)}
+.an-label{font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:var(--red);margin-bottom:24px;text-align:center}
+.an-grid{display:grid;grid-template-columns:repeat(2,minmax(0,460px));gap:32px;justify-content:center;max-width:980px;margin:0 auto}
+.an-img{aspect-ratio:auto;height:auto}
+.an-img img{width:100%;height:auto;object-fit:contain;transform:none}
+.an-card:hover .an-img img{transform:none}
+@media(max-width:900px){.an-grid{grid-template-columns:minmax(0,460px);max-width:460px}}
 .prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
 .prod-grid.collapsed{display:none}
 .collection-label{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;user-select:none}
@@ -794,6 +801,23 @@ body { padding-bottom: 72px; }
  <a href="https://putyaheartinit.com/shop" class="btn-w" target="_blank">Shop Now</a>
  <a href="#book" class="btn-outline">Explore the Book</a>
  </div>
+ </div>
+ </div>
+</section>
+
+<!-- ═══ AVAILABLE NOW ═══ -->
+<section class="available-now" id="availableNow">
+ <div class="ctn">
+ <p class="an-label">Available Now</p>
+ <div class="an-grid">
+ <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card an-card rv">
+ <div class="prod-img an-img"><img src="images/featured-astro-tee-lookbook.jpg" alt="Astro Heart Tee"></div>
+ <div class="prod-info"><div class="prod-name">Astro Heart Tee</div><div class="prod-price">$80</div></div>
+ </a>
+ <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card an-card rv">
+ <div class="prod-img an-img"><img src="images/featured-throne-ls-lookbook.jpg" alt="Heart Throne Long Sleeve"></div>
+ <div class="prod-info"><div class="prod-name">Heart Throne Long Sleeve</div><div class="prod-price">$100</div></div>
+ </a>
  </div>
  </div>
 </section>
