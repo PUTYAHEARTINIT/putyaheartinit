@@ -1,0 +1,63 @@
+<!-- ═══ PASSION QUIZ ═══ -->
+<section class="quiz-sec" id="quiz">
+ <div class="sec-video-wrap">
+   <video class="sec-video" autoplay muted loop playsinline>
+     <source src="images/video-a.mp4" type="video/mp4">
+   </video>
+   <div class="sec-video-overlay" style="background:rgba(6,6,9,0.88)"></div>
+ </div>
+
+ <div class="quiz-shell" id="quizShell">
+
+   <!-- QUIZ HEADER -->
+   <div class="quiz-header">
+     <span class="quiz-brand">PUTYAHEARTINIT</span>
+     <div class="quiz-progress-wrap" id="quizProgressWrap" style="display:none">
+       <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizFill"></div></div>
+       <div class="quiz-progress-txt" id="quizProgressTxt">Question 1 of 15</div>
+     </div>
+     <button class="quiz-close" id="quizRestartBtn" style="display:none" onclick="quizRestart()">Restart</button>
+   </div>
+
+   <!-- QUIZ STAGE -->
+   <div class="quiz-stage" id="quizStage">
+
+     <!-- INTRO CARD -->
+     <div class="quiz-card active" id="quizIntro" style="text-align:center;max-width:620px">
+       <div class="quiz-q-num">The PYHI Passion Finder</div>
+       <div class="quiz-question" style="font-size:clamp(32px,6vw,64px)">WHAT ARE YOU<br>GONNA PUT YA<br>HEART IN?</div>
+       <p style="font-size:14px;font-weight:300;color:var(--gray);line-height:1.8;margin-bottom:40px;max-width:460px;margin-left:auto;margin-right:auto;">15 questions. 3 minutes. We'll tell you exactly what you're built for — and how to put your whole heart into it.</p>
+       <button class="btn-w" onclick="quizStart()" style="margin:0 auto;display:inline-flex;">Find My Path</button>
+     </div>
+
+     <!-- QUESTION CARDS (injected by JS) -->
+     <div id="quizCards"></div>
+
+     <!-- EMAIL GATE -->
+     <div class="quiz-card quiz-gate" id="quizGate">
+       <div class="quiz-gate-label">Almost there</div>
+       <div class="quiz-gate-title">YOUR RESULTS<br>ARE READY</div>
+       <div class="quiz-gate-sub">Enter your email to unlock your full passion profile — your personality type, career paths, and exactly where to put ya heart in it.</div>
+       <form class="quiz-gate-form" onsubmit="quizGateSubmit(event)">
+         <input type="email" id="quizEmail" placeholder="Your email address" required>
+         <button type="submit" id="quizGateBtn">Unlock</button>
+       </form>
+       <p class="quiz-gate-note">No spam. Just your results and the PYHI movement.</p>
+     </div>
+
+     <!-- LOADING -->
+     <div class="quiz-card quiz-loading" id="quizLoading">
+       <div class="quiz-loading-icon">PYHI</div>
+       <div class="quiz-loading-txt">Reading your heart...</div>
+       <div class="quiz-loading-sub">Claude AI is building your passion profile</div>
+     </div>
+
+     <!-- RESULTS -->
+     <div class="quiz-card" id="quizResultsCard">
+       <div class="quiz-results" id="quizResults"></div>
+     </div>
+
+   </div>
+ </div>
+</section>
+
