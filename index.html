@@ -137,6 +137,11 @@ nav.scrolled{padding:10px 48px;background:rgba(10,10,10,0.95)}
 /* ═══ PRODUCTS ═══ */
 .products{padding:100px 0;background:var(--black);border-top:1px solid rgba(255,255,255,0.04)}
 .prod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
+.prod-grid.collapsed{display:none}
+.collection-label{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:16px;user-select:none}
+.collection-label .cl-count{font-family:'Outfit',sans-serif;letter-spacing:0;font-size:12px;color:var(--gray2);margin-left:auto;padding-right:12px}
+.collection-label .cl-chev{font-size:16px;transition:transform 0.3s;flex-shrink:0}
+.collection-label.open .cl-chev{transform:rotate(180deg)}
 .prod-card{background:var(--black2);overflow:hidden;transition:all 0.4s cubic-bezier(0.22,1,0.36,1)}
 .prod-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(0,0,0,0.4)}
 .prod-img{aspect-ratio:3/4;background:var(--black3);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
@@ -874,7 +879,7 @@ body { padding-bottom: 72px; }
 
  <!-- VARSITY #11 SWEAT SETS -->
  <div class="rv" style="margin-top:56px;">
- <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">VARSITY #11 SWEAT SETS</div>
+ <div class="collection-label" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">VARSITY #11 SWEAT SETS</div>
  </div>
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
@@ -913,7 +918,7 @@ body { padding-bottom: 72px; }
 
  <!-- VARSITY #11 SEPARATES -->
  <div class="rv" style="margin-top:56px;">
- <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">VARSITY #11 SEPARATES</div>
+ <div class="collection-label" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">VARSITY #11 SEPARATES</div>
  </div>
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
@@ -952,7 +957,7 @@ body { padding-bottom: 72px; }
 
  <!-- HEART CAMO CYCLE 001 -->
  <div class="rv" style="margin-top:56px;">
- <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">HEART CAMO CYCLE 001</div>
+ <div class="collection-label" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">HEART CAMO CYCLE 001</div>
  </div>
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv" style="grid-column:span 2;grid-row:span 2;">
@@ -982,7 +987,7 @@ body { padding-bottom: 72px; }
 
  <!-- HEART DENIM COLLECTION -->
  <div class="rv" style="margin-top:56px;">
- <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">HEART DENIM COLLECTION</div>
+ <div class="collection-label" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">HEART DENIM COLLECTION</div>
  </div>
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
@@ -1021,7 +1026,7 @@ body { padding-bottom: 72px; }
 
  <!-- CREATURE COLLECTION & CHARACTER JEANS -->
  <div class="rv" style="margin-top:56px;">
- <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">CREATURE COLLECTION &amp; CHARACTER JEANS</div>
+ <div class="collection-label" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">CREATURE COLLECTION &amp; CHARACTER JEANS</div>
  </div>
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
@@ -1052,7 +1057,7 @@ body { padding-bottom: 72px; }
 
  <!-- STATEMENT PIECES -->
  <div class="rv" style="margin-top:56px;">
- <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">STATEMENT PIECES</div>
+ <div class="collection-label" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">STATEMENT PIECES</div>
  </div>
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
@@ -1083,7 +1088,7 @@ body { padding-bottom: 72px; }
 
  <!-- KIDS & ACCESSORIES -->
  <div class="rv" style="margin-top:56px;">
- <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">KIDS &amp; ACCESSORIES</div>
+ <div class="collection-label" style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px;color:var(--gray);margin-bottom:20px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);">KIDS &amp; ACCESSORIES</div>
  </div>
  <div class="prod-grid" style="grid-template-columns:repeat(4,1fr);">
  <a href="https://putyaheartinit.com/shop" target="_blank" class="prod-card rv">
@@ -2549,10 +2554,10 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
     modal.style.display = 'flex';
   }
 
-  // Only the Astro Heart Tee is purchasable right now — every other item in
-  // the line stays visible (so the shop doesn't look empty) but is marked
+  // Only these are purchasable right now — every other item in the line
+  // stays visible (so the shop doesn't look empty) but is marked
   // "Coming Soon" and its buy flow is disabled until it's brought back.
-  const AVAILABLE_NOW = ['Astro Heart Tee'];
+  const AVAILABLE_NOW = ['Astro Heart Tee', 'Heart Throne Long Sleeve'];
 
   document.querySelectorAll('.prod-card').forEach(card => {
     card.removeAttribute('href');
@@ -2576,6 +2581,32 @@ document.querySelectorAll('a[href^="#"]').forEach(a=>{
     card.addEventListener('click', (e) => {
       e.preventDefault();
       if (name) showSizeSelector(name);
+    });
+  });
+})();
+
+// Shop collections: one collapsed row per clothing type — click to expand
+// and see every option in it, instead of every collection stacked open.
+(function() {
+  document.querySelectorAll('.collection-label').forEach(label => {
+    const wrap = label.closest('.rv');
+    const grid = wrap ? wrap.nextElementSibling : null;
+    if (!grid || !grid.classList.contains('prod-grid')) return;
+
+    const count = grid.querySelectorAll('.prod-card').length;
+    const countEl = document.createElement('span');
+    countEl.className = 'cl-count';
+    countEl.textContent = count + (count === 1 ? ' item' : ' items');
+    const chev = document.createElement('span');
+    chev.className = 'cl-chev';
+    chev.textContent = '⌄';
+    label.appendChild(countEl);
+    label.appendChild(chev);
+
+    grid.classList.add('collapsed');
+    label.addEventListener('click', () => {
+      grid.classList.toggle('collapsed');
+      label.classList.toggle('open');
     });
   });
 })();
