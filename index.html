@@ -60,6 +60,23 @@
  </ul>
  <button class="nav-toggle" id="navToggle" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
+<!-- MUSIC PLAYER BAR -->
+<div class="music-bar" id="musicBar">
+ <div class="music-prompt" id="musicPrompt">
+ <span class="eq-bars">
+ <span></span><span></span><span></span><span></span>
+ </span>
+ Tap to turn up the heat
+ </div>
+ <div class="spotify-embed" id="spotifyEmbed">
+ <button class="music-close" id="musicClose" aria-label="Close player">✕</button>
+ <div class="artist-toggle">
+ <button class="active" id="btnPYHI" onclick="switchArtist('pyhi', event)">PYHI</button>
+ <button id="btnStevie" onclick="switchArtist('stevie', event)">Stevie Harts</button>
+ </div>
+ <div class="spotify-iframe-wrap" id="iframeWrap"></div>
+ </div>
+</div>
 <!-- ═══ HERO ═══ -->
 <section class="hero">
  <div class="hero-video-wrap">

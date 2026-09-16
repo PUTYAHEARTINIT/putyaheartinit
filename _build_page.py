@@ -28,7 +28,7 @@ pages = [
     ("Studio", "Creative studio services from PUTYAHEARTINIT.", ["studio.html"], "studio.html", None, False),
     ("Community", "Social impact, NIL partnerships, and community voices.", ["impact.html","nil.html","voices.html"], "community.html", None, False),
     ("About", "The movement, the story, and the vision behind PUTYAHEARTINIT.", ["movement.html","about.html","vision.html","manifesto.html"], "about.html", None, False),
-    ("Music", "PUTYAHEARTINIT and Stevie Harts discography.", ["discog.html","musichub.html"], "music.html", ["music-player.js"], False),
+    ("Music", "PUTYAHEARTINIT and Stevie Harts discography.", ["discog.html","musichub.html"], "music.html", None, False),
     ("The Book", "Press, features, and the world of the book.", ["press.html","portal.html","drops.html"], "book.html", None, False),
     ("Join", "Join the PUTYAHEARTINIT movement.", ["join.html"], "join.html", None, False),
 ]
